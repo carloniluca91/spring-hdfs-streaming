@@ -1,0 +1,3 @@
+hdfs:
+  user: cloudera
+  rootPath: hdfs://quickstart.cloudera:8020/user/${hdfs.user}/data/lake_cedacri/
