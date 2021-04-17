@@ -1,3 +1,15 @@
+appName: lake_cedacri
 hdfs:
   user: cloudera
-  rootPath: hdfs://quickstart.cloudera:8020/user/${hdfs.user}/data/lake_cedacri/
+  defaultNode: quickstart.cloudera
+  path:
+    landingRoot: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}/applications/${appName}/landing
+    schemasRoot: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}/applications/${appName}/schemas
+
+jdbc:
+  hive:
+    url: jdbc:hive2://${hdfs.defaultNode}:10000/${appName}
+    driver: org.apache.hive.jdbc.HiveDriver
+  impala:
+    url: jdbc:impala://${hdfs.defaultNode}:21050/${appName}
+    driver: com.cloudera.impala.jdbc.Driver

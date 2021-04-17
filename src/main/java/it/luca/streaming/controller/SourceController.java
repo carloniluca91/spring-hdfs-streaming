@@ -3,10 +3,9 @@ package it.luca.streaming.controller;
 import it.luca.streaming.enumeration.DataSourceId;
 import it.luca.streaming.model.PeopleWrapper;
 import it.luca.streaming.model.PersonAvro;
-import it.luca.streaming.service.SourceService;
 import it.luca.streaming.repository.SourceSpecification;
+import it.luca.streaming.service.SourceService;
 import it.luca.streaming.utils.DatePattern;
-import it.luca.streaming.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +20,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static it.luca.streaming.utils.Utils.now;
 
 @Slf4j
 @RestController
@@ -38,8 +39,8 @@ public class SourceController {
                         .setFirstName(person.getFirstName())
                         .setLastName(person.getLastName())
                         .setBirthDate(person.getBirthDate())
-                        .setInsertTs(Utils.now(DatePattern.DEFAULT_TIMESTAMP))
-                        .setInsertDt(Utils.now(DatePattern.DEFAULT_DATE))
+                        .setInsertTs(now(DatePattern.DEFAULT_TIMESTAMP))
+                        .setInsertDt(now(DatePattern.DEFAULT_DATE))
                         .build()
                 ).collect(Collectors.toList());
 
@@ -50,9 +51,9 @@ public class SourceController {
                 .dataSourceId(DataSourceId.BANCLL_01)
                 .tClass(PeopleWrapper.class)
                 .avroClass(PersonAvro.class)
-                .partitioningColumn("dt_business_date")
-                .tToPartitionValues(partitioningFunction)
-                .tToAvroRecordList(avroFunction)
+                .partitionColumn("dt_business_date")
+                .partitionValuesFunction(partitioningFunction)
+                .partitionValueRecords(avroFunction)
                 .build();
 
         sourceService.store(string, sourceSpecification);
