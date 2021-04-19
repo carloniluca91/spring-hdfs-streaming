@@ -13,10 +13,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static it.luca.streaming.utils.Utils.joinPathElements;
+import static it.luca.streaming.utils.HDFSUtils.mergePaths;
+import static it.luca.streaming.utils.Utils.mkString;
+import static it.luca.streaming.utils.Utils.toStringStream;
 
 @Slf4j
 @Component
@@ -62,19 +63,24 @@ public class CDHDao {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
         String tableName = sourceSpecification.getTableName();
-        List<String> existingTables = impalaJdbi.withHandle(handle -> handle.attach(sourceSpecification.getImpalaDaoClass()).showTables());
+
+        // Retrieve tables created already
+        List<String> existingTables = impalaJdbi.withHandle(handle -> handle.attach(ImpalaDao.class).showTables());
         if (existingTables.stream().anyMatch(s -> s.equalsIgnoreCase(tableName))) {
             log.info("{} - Table {} already exists", dataSourceId, tableName);
         } else {
+
+            // If table does not exist yet, create it using Hive Jdbi and execute invalidate metadata using Impala Jdbi
             String partitionClause = sourceSpecification.getPartitionClause();
-            String tableLocation = joinPathElements(landingRootPath, tableName).toString();
-            String avroSchemaLocation = joinPathElements(schemasRootPath, sourceSpecification.getAvroSchemaFile()).toString();
+            String tableLocation = mergePaths(landingRootPath, tableName).toString();
+            String avroSchemaLocation = mergePaths(schemasRootPath, sourceSpecification.getAvroSchemaFile()).toString();
             log.warn("{} - Table {} does not exist yet. Creating it now with partitionClause ({}), location {}, avro schema location {}",
                     dataSourceId, tableName, partitionClause, tableLocation, avroSchemaLocation);
             hiveJdbi.useHandle(handle -> handle.attach(HiveDao.class)
                     .createTable(tableName, partitionClause, tableLocation, avroSchemaLocation));
             log.info("{} - Created table {} with partitionClause ({}), location {}, avro schema location {}",
                     dataSourceId, tableName, partitionClause, tableLocation, avroSchemaLocation);
+            impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).invalidateMetadata(tableName));
         }
     }
 
@@ -82,19 +88,28 @@ public class CDHDao {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
         String tableName = sourceSpecification.getTableName();
-        List<P> existingPartitionValues = impalaJdbi.withHandle(handle -> handle.attach(sourceSpecification.getImpalaDaoClass())
+
+        // Retrieve existing partitions values
+        List<String> existingPartitionValues = impalaJdbi
+                .withHandle(handle -> handle.attach(ImpalaDao.class)
                 .getPartitionValues(tableName, sourceSpecification.getPartitionColumn()));
 
-        List<P> newPartitionValues = batchPartitionValues.stream()
+        // New partition values brought by current data batch
+        List<String> newPartitionValues = toStringStream(batchPartitionValues)
                 .filter(i -> !existingPartitionValues.contains(i))
                 .collect(Collectors.toList());
 
-        Function<List<P>, String> function = l -> l.stream().map(String::valueOf).collect(Collectors.joining("|"));
         if (newPartitionValues.isEmpty()) {
-            log.info("{} - All partitions carried by current batch ({}) exist already", dataSourceId, function.apply(batchPartitionValues));
+
+            // Just refresh table using Impala Jdbi
+            log.info("{} - All partitions embedded in current batch ({}) exist already",
+                    dataSourceId, mkString("|", batchPartitionValues));
             impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).refresh(tableName));
         } else {
-            log.info("{} - New partitions carried by current batch are ({})", dataSourceId, function.apply(newPartitionValues));
+
+            // If new partitions have been added, run metastore check (MSCK) using Hive Jdbi and invalidate metadata using Impala Jdbi
+            log.info("{} - New partitions embedded in current batch are ({}). Need to update table metadata",
+                    dataSourceId, mkString("|", newPartitionValues));
             hiveJdbi.useHandle(handle -> handle.attach(HiveDao.class).msck(tableName));
             impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).invalidateMetadata(tableName));
             log.info("{} - Updated metadata for table {}", dataSourceId, tableName);

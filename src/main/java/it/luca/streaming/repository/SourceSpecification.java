@@ -1,6 +1,5 @@
 package it.luca.streaming.repository;
 
-import it.luca.streaming.dao.ImpalaDao;
 import it.luca.streaming.enumeration.DataSourceId;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +19,6 @@ public class SourceSpecification<T, A extends SpecificRecord, P> {
     private final String tableName;
     private final String partitionColumn;
     private final String partitionColumnType;
-    private final Class<? extends ImpalaDao<P>> impalaDaoClass;
     private final String avroSchemaFile;
     private final Function<T, List<P>> partitionValuesFunction;
     private final BiFunction<T, P, List<A>> partitionValueRecords;

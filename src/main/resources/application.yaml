@@ -5,6 +5,7 @@ hdfs:
   path:
     landingRoot: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}/applications/${appName}/landing
     schemasRoot: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}/applications/${appName}/schemas
+    permissions: -rwx-r-x-r-x
 
 jdbc:
   hive:

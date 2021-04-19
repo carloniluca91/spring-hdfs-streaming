@@ -10,11 +10,11 @@ import java.util.List;
 
 @UseClasspathSqlLocator
 @UseStringTemplateEngine
-public interface ImpalaDao<P> {
+public interface ImpalaDao {
 
     @SqlQuery
-    List<P> getPartitionValues(@Define("name") String tableName,
-                               @Define("partitionColumn") String partitionColumnName);
+    List<String> getPartitionValues(@Define("name") String tableName,
+                                    @Define("partitionColumn") String partitionColumnName);
 
     @SqlUpdate
     void invalidateMetadata(@Define("name") String tableName);

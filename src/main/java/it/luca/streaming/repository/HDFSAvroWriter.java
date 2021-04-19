@@ -11,65 +11,52 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedAction;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static it.luca.streaming.utils.Utils.joinPathElements;
+import static it.luca.streaming.utils.HDFSUtils.mergePaths;
+import static it.luca.streaming.utils.Utils.mkString;
 import static it.luca.streaming.utils.Utils.now;
 
 @Slf4j
 @Component
-public class HdfsAvroWriter {
-
-    @Value("${hdfs.path.landingRoot}")
-    private String landingRootPath;
+public class HDFSAvroWriter {
 
     @Value("${hdfs.user}")
     private String hdfsUser;
 
-    @Autowired
-    private CDHDao cdhDao;
+    @Value("${hdfs.path.landingRoot}")
+    private String landingRootPath;
 
-    private FileSystem fileSystem;
-    private UserGroupInformation userGroupInformation;
-
-    @PostConstruct
-    private void init() throws IOException {
-
-        fileSystem = FileSystem.get(URI.create(landingRootPath), new Configuration());
-        userGroupInformation = UserGroupInformation.createRemoteUser(hdfsUser);
-        log.info("Initialized both {} and {} instance", FileSystem.class.getName(), UserGroupInformation.class.getName());
-    }
+    @Value("${hdfs.path.permissions}")
+    private String hdfsPathPermissions;
 
     public <T, A extends SpecificRecord, P> void write(T payload, SourceSpecification<T, A, P> sourceSpecification) {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
         List<P> partitionValues = sourceSpecification.getPartitionValuesFunction().apply(payload);
-        log.info("{} - Found {} partitioning value(s) for current batch: ({})", dataSourceId, partitionValues.size(),
-                partitionValues.stream()
-                        .map(String::valueOf)
-                        .collect(Collectors.joining("|")));
+        log.info("{} - Found {} partition value(s) for current batch: ({})",
+                dataSourceId, partitionValues.size(), mkString("|", partitionValues));
 
+        UserGroupInformation userGroupInformation = UserGroupInformation.createRemoteUser(hdfsUser);
         userGroupInformation.doAs((PrivilegedAction<Object>) () -> {
             try {
-                Path tablePath = joinPathElements(landingRootPath, sourceSpecification.getTableName());
-                createPathIfNotExists(tablePath);
+                FileSystem fileSystem = FileSystem.get(URI.create(landingRootPath), new Configuration());
+                log.info("Initialized both {} and {} instance", UserGroupInformation.class.getName(), FileSystem.class.getName());
+                Path tablePath = mergePaths(landingRootPath, sourceSpecification.getTableName());
+                createPathIfNotExists(fileSystem, tablePath);
                 DataFileWriter<A> dataFileWriter = new DataFileWriter<>(new SpecificDatumWriter<>(sourceSpecification.getAvroClass()));
-                for (P partitioningValue: partitionValues) {
+                for (P partitionValue: partitionValues) {
 
-                    Path partitionPath = new Path(String.format("%s=%s", sourceSpecification.getPartitionColumn(), partitioningValue));
-                    Path tablePlusPartitionPath = joinPathElements(tablePath, partitionPath);
-                    createPathIfNotExists(tablePlusPartitionPath);
-                    Path fullFilePath = joinPathElements(tablePlusPartitionPath, new Path(String.format("batch_%s.avro", now("yyyy_MM_dd_HH_mm_ss"))));
-                    List<A> avroRecords = sourceSpecification.getPartitionValueRecords().apply(payload, partitioningValue);
+                    Path tablePlusPartitionPath = mergePaths(tablePath, String.format("%s=%s", sourceSpecification.getPartitionColumn(), partitionValue));
+                    createPathIfNotExists(fileSystem, tablePlusPartitionPath);
+                    Path fullFilePath = mergePaths(tablePlusPartitionPath, String.format("batch_%s.avro", now("yyyy_MM_dd_HH_mm_ss")));
+                    List<A> avroRecords = sourceSpecification.getPartitionValueRecords().apply(payload, partitionValue);
                     log.info("{} - Saving {} Avro record(s) at HDFS path {}", dataSourceId, avroRecords.size(), tablePlusPartitionPath);
                     dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(fullFilePath, false));
                     for (A avroRecord: avroRecords) {
@@ -84,19 +71,19 @@ public class HdfsAvroWriter {
             return null;
         });
 
+        CDHDao cdhDao = new CDHDao();
         cdhDao.createTableIfNotExists(sourceSpecification);
         cdhDao.updateMetadata(partitionValues, sourceSpecification);
     }
 
-    private boolean createPathIfNotExists(Path path) throws IOException {
+    private void createPathIfNotExists(FileSystem fileSystem, Path path) throws IOException {
 
         if (!fileSystem.exists(path)) {
-            log.warn("Path {} does not exist yet. Creating now", path);
-            fileSystem.mkdirs(path, FsPermission.valueOf("-rwx-r-x-r-x"));
-            return true;
+            log.warn("Path {} does not exist yet. Creating now with permissions {}", path, hdfsPathPermissions);
+            fileSystem.mkdirs(path, FsPermission.valueOf(hdfsPathPermissions));
+            log.info("Created path {} with permissions {}", path, hdfsPathPermissions);
         } else {
             log.info("Path {} exists already", path);
-            return false;
         }
     }
 }
