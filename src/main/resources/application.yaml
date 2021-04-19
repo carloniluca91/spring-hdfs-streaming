@@ -3,9 +3,9 @@ hdfs:
   user: cloudera
   defaultNode: quickstart.cloudera
   path:
-    landingRoot: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}/applications/${appName}/landing
-    schemasRoot: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}/applications/${appName}/schemas
-    permissions: -rwx-r-x-r-x
+    landingRoot: /user/${hdfs.user}/applications/${appName}/landing/
+    schemasRoot: /user/${hdfs.user}/applications/${appName}/schemas/
+    permissions: -rwxr-xr-x
 
 jdbc:
   hive:
@@ -14,3 +14,5 @@ jdbc:
   impala:
     url: jdbc:impala://${hdfs.defaultNode}:21050/${appName}
     driver: com.cloudera.impala.jdbc.Driver
+  table:
+    prefix: t_rw_ingested_

@@ -1,13 +1,14 @@
 package it.luca.streaming.controller;
 
 import it.luca.streaming.enumeration.DataSourceId;
+import it.luca.streaming.model.Bancll01Avro;
 import it.luca.streaming.model.PeopleWrapper;
-import it.luca.streaming.model.PersonAvro;
 import it.luca.streaming.repository.SourceSpecification;
 import it.luca.streaming.service.SourceService;
 import it.luca.streaming.utils.DatePattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,14 +29,22 @@ import static it.luca.streaming.utils.Utils.now;
 @RequestMapping("/api/v1/source")
 public class SourceController {
 
+    @Value("${jdbc.table.prefix}")
+    private String tableNamePrefix;
+
     @Autowired
     private SourceService sourceService;
 
-    @PostMapping("/people")
+    private String tableName(DataSourceId dataSourceId) {
+
+        return tableNamePrefix.toLowerCase() + dataSourceId.name().toLowerCase();
+    }
+
+    @PostMapping("/bancll01")
     public ResponseEntity<HttpStatus> people(@RequestBody String string) {
 
-        BiFunction<PeopleWrapper, String, List<PersonAvro>> avroFunction = (peopleWrapper, s) ->
-                peopleWrapper.getPeople().stream().map(person -> PersonAvro.newBuilder()
+        BiFunction<PeopleWrapper, String, List<Bancll01Avro>> avroFunction = (peopleWrapper, s) ->
+                peopleWrapper.getPeople().stream().map(person -> Bancll01Avro.newBuilder()
                         .setFirstName(person.getFirstName())
                         .setLastName(person.getLastName())
                         .setBirthDate(person.getBirthDate())
@@ -46,12 +55,15 @@ public class SourceController {
 
         Function<PeopleWrapper, List<String>> partitioningFunction = peopleWrapper ->
                 Collections.singletonList(peopleWrapper.getDtBusinessDate());
-        SourceSpecification<PeopleWrapper, PersonAvro, String> sourceSpecification = SourceSpecification
-                .<PeopleWrapper, PersonAvro, String>builder()
+        SourceSpecification<PeopleWrapper, Bancll01Avro, String> sourceSpecification = SourceSpecification
+                .<PeopleWrapper, Bancll01Avro, String>builder()
                 .dataSourceId(DataSourceId.BANCLL_01)
                 .tClass(PeopleWrapper.class)
-                .avroClass(PersonAvro.class)
+                .avroClass(Bancll01Avro.class)
+                .tableName(tableName(DataSourceId.BANCLL_01))
                 .partitionColumn("dt_business_date")
+                .partitionColumnType("string")
+                .avroSchemaFile("bancll01.avsc")
                 .partitionValuesFunction(partitioningFunction)
                 .partitionValueRecords(avroFunction)
                 .build();

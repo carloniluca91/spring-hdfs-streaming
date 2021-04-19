@@ -22,6 +22,6 @@ public interface ImpalaDao {
     @SqlUpdate
     void refresh(@Define("name") String tableName);
 
-    @SqlUpdate
+    @SqlQuery
     List<String> showTables();
 }

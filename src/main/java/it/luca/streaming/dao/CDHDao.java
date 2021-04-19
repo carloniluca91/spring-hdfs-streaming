@@ -5,6 +5,7 @@ import it.luca.streaming.enumeration.DataSourceId;
 import it.luca.streaming.repository.SourceSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static it.luca.streaming.utils.HDFSUtils.mergePaths;
 import static it.luca.streaming.utils.Utils.mkString;
-import static it.luca.streaming.utils.Utils.toStringStream;
+import static it.luca.streaming.utils.Utils.toStreamOf;
 
 @Slf4j
 @Component
@@ -49,14 +50,14 @@ public class CDHDao {
 
         Class.forName(hiveJdbcDriver);
         Connection hiveJdbcConnection = DriverManager.getConnection(hiveJdbcUrl);
-        hiveJdbi = Jdbi.create(hiveJdbcConnection);
-        log.info("Initialized Hive {} instance", Jdbi.class.getName());
+        hiveJdbi = Jdbi.create(hiveJdbcConnection).installPlugin(new SqlObjectPlugin());
+        log.info("Initialized Hive {} instance", Jdbi.class.getSimpleName());
 
         Class.forName(impalaJdbcDriver);
         DataSource dataSource = new com.cloudera.impala.jdbc.DataSource();
         dataSource.setURL(impalaJdbcUrl);
-        impalaJdbi = Jdbi.create(dataSource);
-        log.info("Initialized Impala {} instance", Jdbi.class.getName());
+        impalaJdbi = Jdbi.create(dataSource).installPlugin(new SqlObjectPlugin());
+        log.info("Initialized Impala {} instance", Jdbi.class.getSimpleName());
     }
 
     public <P> void createTableIfNotExists(SourceSpecification<?, ?, P> sourceSpecification) {
@@ -64,7 +65,7 @@ public class CDHDao {
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
         String tableName = sourceSpecification.getTableName();
 
-        // Retrieve tables created already
+        // Retrieve existing tables
         List<String> existingTables = impalaJdbi.withHandle(handle -> handle.attach(ImpalaDao.class).showTables());
         if (existingTables.stream().anyMatch(s -> s.equalsIgnoreCase(tableName))) {
             log.info("{} - Table {} already exists", dataSourceId, tableName);
@@ -89,13 +90,13 @@ public class CDHDao {
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
         String tableName = sourceSpecification.getTableName();
 
-        // Retrieve existing partitions values
+        // Retrieve existing partition's values
         List<String> existingPartitionValues = impalaJdbi
                 .withHandle(handle -> handle.attach(ImpalaDao.class)
                 .getPartitionValues(tableName, sourceSpecification.getPartitionColumn()));
 
-        // New partition values brought by current data batch
-        List<String> newPartitionValues = toStringStream(batchPartitionValues)
+        // New partition values brought by current batch
+        List<String> newPartitionValues = toStreamOf(batchPartitionValues, String::valueOf)
                 .filter(i -> !existingPartitionValues.contains(i))
                 .collect(Collectors.toList());
 

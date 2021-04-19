@@ -1,0 +1,24 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="IMPALA" class="it.luca.streaming.logging.ImpalaAppender">
+        <url>jdbc:impala://quickstart.cloudera:21050/lake_cedacri</url>
+        <driverClass>com.cloudera.impala.jdbc.Driver</driverClass>
+        <batchSize>10</batchSize>
+    </appender>
+
+    <root level="INFO" >
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="IMPALA"/>
+    </root>
+
+    <logger name="it.luca.streaming" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="IMPALA"/>
+    </logger>
+</configuration>

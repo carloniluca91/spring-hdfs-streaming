@@ -3,6 +3,8 @@ package it.luca.streaming.utils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -10,7 +12,8 @@ public class Utils {
 
     public static <T> String mkString(String separator, List<T> values) {
 
-        return toStringStream(values).collect(Collectors.joining(separator));
+        return toStreamOf(values, String::valueOf)
+                .collect(Collectors.joining(separator));
     }
 
     public static LocalDateTime now() {
@@ -23,8 +26,15 @@ public class Utils {
         return now().format(DateTimeFormatter.ofPattern(pattern));
     }
 
-    public static <T> Stream<String> toStringStream(List<T> values) {
+    public static <T, R> R orNull(T t, Function<T, R> trFunction) {
 
-        return values.stream().map(String::valueOf);
+        return Optional.ofNullable(t)
+                .map(trFunction)
+                .orElse(null);
+    }
+
+    public static <T, R> Stream<R> toStreamOf(List<T> values, Function<T, R> trFunction) {
+
+        return values.stream().map(trFunction);
     }
 }

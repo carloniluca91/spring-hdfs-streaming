@@ -34,6 +34,8 @@ public class SourceService {
             }
         } catch (JsonProcessingException | EmptyInputException e) {
             log.error("{} - Caught exception while processing given input. Stack trace: ", dataSourceId, e);
+        } catch (Exception e) {
+            log.error("{} - Caught exception while saving data. Stack trace: ", dataSourceId, e);
         }
     }
 }
