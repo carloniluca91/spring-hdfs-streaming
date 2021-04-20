@@ -1,7 +1,7 @@
 package it.luca.streaming.data.utils;
 
 import it.luca.streaming.data.enumeration.DataSourceType;
-import it.luca.streaming.data.model.PeopleWrapper;
+import it.luca.streaming.data.model.Bancll01XML;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -22,9 +22,9 @@ class ObjectDeserializerTest {
     @Test
     public void bancll01() throws IOException {
 
-        PeopleWrapper peopleWrapper = readValue(inputStream("bancll01.xml"), PeopleWrapper.class, DataSourceType.XML);
-        assertNotNull(peopleWrapper.getDtBusinessDate());
-        assertNotNull(peopleWrapper.getPeople());
-        assertFalse(peopleWrapper.getPeople().isEmpty());
+        Bancll01XML bancll01XML = readValue(inputStream("bancll01.xml"), Bancll01XML.class, DataSourceType.XML);
+        assertNotNull(bancll01XML.getDtBusinessDate());
+        assertNotNull(bancll01XML.getPeople());
+        assertFalse(bancll01XML.getPeople().isEmpty());
     }
 }

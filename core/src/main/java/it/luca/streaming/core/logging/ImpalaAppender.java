@@ -3,22 +3,19 @@ package it.luca.streaming.core.logging;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.cloudera.impala.jdbc.DataSource;
-import it.luca.streaming.core.utils.Utils;
+import it.luca.streaming.core.utils.DatePattern;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static it.luca.streaming.core.utils.Utils.now;
 
@@ -41,14 +38,16 @@ public class ImpalaAppender extends AppenderBase<ILoggingEvent> {
 
         super.doAppend(eventObject);
         StackTraceElement stackTraceElement = eventObject.getCallerData()[0];
-        Optional<Exception> optionalException = Arrays.stream(eventObject.getArgumentArray())
-                .filter(o -> o instanceof Exception)
-                .map(o -> (Exception) o)
-                .findFirst();
+        Optional<Exception> optionalException = Optional.ofNullable(eventObject.getArgumentArray()).isPresent() ?
+                Stream.of(eventObject.getArgumentArray())
+                        .filter(o -> o instanceof Exception)
+                        .map(o -> (Exception) o)
+                        .findFirst() :
+                Optional.empty();
 
         LoggingRecord loggingRecord = LoggingRecord.builder()
                 .logTs(Timestamp.from(Instant.ofEpochMilli(eventObject.getTimeStamp())))
-                .logMessage(eventObject.getMessage())
+                .logMessage(eventObject.getFormattedMessage())
                 .logLevel(eventObject.getLevel().toString())
                 .exceptionClass(optionalException.map(e -> e.getClass().getName()).orElse(null))
                 .exceptionMessage(optionalException.map(Exception::getMessage).orElse(null))
@@ -56,18 +55,16 @@ public class ImpalaAppender extends AppenderBase<ILoggingEvent> {
                 .classFQName(stackTraceElement.getClassName())
                 .methodName(stackTraceElement.getMethodName())
                 .lineNumber(stackTraceElement.getLineNumber())
-                .logDt(new Date(eventObject.getTimeStamp()))
-                .month(Utils.now("yyyy-MM"))
+                .logDt(now(DatePattern.DEFAULT_DATE))
+                .month(now("yyyy-MM"))
                 .build();
 
         loggingRecords.add(loggingRecord);
         if (loggingRecords.size() >= batchSize) {
 
-            LocalDateTime localDateTime = LocalDateTime.now();
-            LocalDate localDate = LocalDate.now();
             loggingRecords.forEach(l -> {
-                l.setInsertTs(Timestamp.valueOf(localDateTime));
-                l.setInsertDt(Date.valueOf(localDate));
+                l.setInsertTs(Timestamp.valueOf(now()));
+                l.setInsertDt(now(DatePattern.DEFAULT_DATE));
             });
 
             jdbi.useHandle(handle -> handle.attach(LoggingDao.class).save(loggingRecords));
@@ -87,7 +84,6 @@ public class ImpalaAppender extends AppenderBase<ILoggingEvent> {
         DataSource dataSource = new DataSource();
         dataSource.setURL(url);
         jdbi = Jdbi.create(dataSource).installPlugin(new SqlObjectPlugin());
-
         jdbi.useHandle(handle -> handle.attach(LoggingDao.class).createTable());
     }
 
@@ -97,6 +93,7 @@ public class ImpalaAppender extends AppenderBase<ILoggingEvent> {
         super.stop();
         if (!loggingRecords.isEmpty()) {
             jdbi.useHandle(handle -> handle.attach(LoggingDao.class).save(loggingRecords));
+            loggingRecords.clear();
         }
     }
 }

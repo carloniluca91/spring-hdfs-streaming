@@ -14,6 +14,7 @@
     <groupId>it.luca.streaming</groupId>
     <artifactId>core</artifactId>
     <version>0.1.0</version>
+    <packaging>jar</packaging>
     <description>Core - Spring Boot Application</description>
     <organization>
         <name>it.luca</name>
@@ -53,6 +54,13 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -91,6 +99,7 @@
             <artifactId>data-model</artifactId>
             <version>${data.model.version}</version>
         </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-client -->
         <dependency>

@@ -10,6 +10,10 @@ import java.util.stream.Stream;
 
 public class Utils {
 
+    public static String className(Class<?> clazz) {
+        return clazz.getSimpleName();
+    }
+
     public static <T> String mkString(String separator, List<T> values) {
 
         return toStreamOf(values, String::valueOf)

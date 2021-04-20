@@ -4,9 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 
+@Getter
 @Builder
 public class LoggingRecord {
 
@@ -19,12 +19,12 @@ public class LoggingRecord {
     private final String classFQName;
     private final String methodName;
     private final Integer lineNumber;
-    private final Date logDt;
+    private final String logDt;
     private final String month;
 
-    @Getter @Setter
+    @Setter
     private Timestamp insertTs;
 
-    @Getter @Setter
-    private Date insertDt;
+    @Setter
+    private String insertDt;
 }

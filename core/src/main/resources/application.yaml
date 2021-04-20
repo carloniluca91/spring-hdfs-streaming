@@ -2,9 +2,10 @@ appName: lake_cedacri
 hdfs:
   user: cloudera
   defaultNode: quickstart.cloudera
+  fsUri: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}
   path:
     landingRoot: /user/${hdfs.user}/applications/${appName}/landing/
-    schemasRoot: /user/${hdfs.user}/applications/${appName}/schemas/
+    schemasRoot: /user/${hdfs.user}/applications/${appName}/schema/
     permissions: -rwxr-xr-x
 
 jdbc:

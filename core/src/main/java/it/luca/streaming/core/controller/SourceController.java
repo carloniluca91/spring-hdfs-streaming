@@ -1,12 +1,12 @@
 package it.luca.streaming.core.controller;
 
-import it.luca.streaming.data.model.Bancll01Avro;
-import it.luca.streaming.data.model.PeopleWrapper;
+import it.luca.streaming.core.model.SourceResponse;
+import it.luca.streaming.core.repository.SourceSpecification;
 import it.luca.streaming.core.service.SourceService;
 import it.luca.streaming.core.utils.DatePattern;
-import it.luca.streaming.core.utils.Utils;
 import it.luca.streaming.data.enumeration.DataSourceId;
-import it.luca.streaming.core.repository.SourceSpecification;
+import it.luca.streaming.data.model.Bancll01Avro;
+import it.luca.streaming.data.model.Bancll01XML;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,23 +42,23 @@ public class SourceController {
     }
 
     @PostMapping("/bancll01")
-    public ResponseEntity<HttpStatus> people(@RequestBody String string) {
+    public ResponseEntity<SourceResponse> bancll01(@RequestBody String string) {
 
-        BiFunction<PeopleWrapper, String, List<Bancll01Avro>> avroFunction = (peopleWrapper, s) ->
-                peopleWrapper.getPeople().stream().map(person -> Bancll01Avro.newBuilder()
+        BiFunction<Bancll01XML, String, List<Bancll01Avro>> avroFunction = (bancll01XML, s) ->
+                bancll01XML.getPeople().stream().map(person -> Bancll01Avro.newBuilder()
                         .setFirstName(person.getFirstName())
                         .setLastName(person.getLastName())
                         .setBirthDate(person.getBirthDate())
-                        .setInsertTs(Utils.now(DatePattern.DEFAULT_TIMESTAMP))
-                        .setInsertDt(Utils.now(DatePattern.DEFAULT_DATE))
+                        .setInsertTs(now(DatePattern.DEFAULT_TIMESTAMP))
+                        .setInsertDt(now(DatePattern.DEFAULT_DATE))
                         .build()
                 ).collect(Collectors.toList());
 
-        Function<PeopleWrapper, List<String>> partitioningFunction = peopleWrapper -> Collections.singletonList(peopleWrapper.getDtBusinessDate());
-        SourceSpecification<PeopleWrapper, Bancll01Avro, String> sourceSpecification = SourceSpecification
-                .<PeopleWrapper, Bancll01Avro, String>builder()
+        Function<Bancll01XML, List<String>> partitioningFunction = bancll01XML -> Collections.singletonList(bancll01XML.getDtBusinessDate());
+        SourceSpecification<Bancll01XML, Bancll01Avro, String> sourceSpecification = SourceSpecification
+                .<Bancll01XML, Bancll01Avro, String>builder()
                 .dataSourceId(DataSourceId.BANCLL_01)
-                .tClass(PeopleWrapper.class)
+                .tClass(Bancll01XML.class)
                 .avroClass(Bancll01Avro.class)
                 .tableName(tableName(DataSourceId.BANCLL_01))
                 .partitionColumn("dt_business_date")
@@ -68,7 +68,7 @@ public class SourceController {
                 .partitionValueRecords(avroFunction)
                 .build();
 
-        sourceService.store(string, sourceSpecification);
-        return new ResponseEntity<>(HttpStatus.OK);
+        SourceResponse sourceResponse = sourceService.store(string, sourceSpecification);
+        return new ResponseEntity<>(sourceResponse, HttpStatus.OK);
     }
 }
