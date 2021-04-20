@@ -6,7 +6,7 @@
         </encoder>
     </appender>
 
-    <appender name="IMPALA" class="it.luca.streaming.logging.ImpalaAppender">
+    <appender name="IMPALA" class="it.luca.streaming.core.logging.ImpalaAppender">
         <url>jdbc:impala://quickstart.cloudera:21050/lake_cedacri</url>
         <driverClass>com.cloudera.impala.jdbc.Driver</driverClass>
         <batchSize>10</batchSize>
