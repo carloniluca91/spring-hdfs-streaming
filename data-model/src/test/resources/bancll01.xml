@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root>
+    <dtBusinessDate>2021-04-16</dtBusinessDate>
+    <people>
+        <person>
+            <firstName>ohiOhi</firstName>
+            <lastName>ilBudello</lastName>
+            <birthDate>1991-07-02</birthDate>
+        </person>
+        <person>
+            <firstName>pippo</firstName>
+            <lastName>caio</lastName>
+            <birthDate>1984-01-05</birthDate>
+        </person>
+    </people>
+</root>

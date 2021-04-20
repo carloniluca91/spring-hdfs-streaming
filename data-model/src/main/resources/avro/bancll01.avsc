@@ -1,5 +1,5 @@
 {
-  "namespace": "it.luca.streaming.data",
+  "namespace": "it.luca.streaming.data.model",
   "name": "Bancll01Avro",
   "type": "record",
   "fields": [

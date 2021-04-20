@@ -8,8 +8,8 @@ import org.apache.avro.message.SchemaStore;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 5391683148896601066L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Bancll01Avro\",\"namespace\":\"it.luca.streaming.data\",\"fields\":[{\"name\":\"first_name\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"last_name\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"birth_date\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"insert_ts\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"insert_dt\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]}");
+  private static final long serialVersionUID = 7778568384560435328L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Bancll01Avro\",\"namespace\":\"it.luca.streaming.data.model\",\"fields\":[{\"name\":\"first_name\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"last_name\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"birth_date\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"insert_ts\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"insert_dt\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -185,8 +185,8 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
    * Creates a new Bancll01Avro RecordBuilder.
    * @return A new Bancll01Avro RecordBuilder
    */
-  public static Bancll01Avro.Builder newBuilder() {
-    return new Bancll01Avro.Builder();
+  public static it.luca.streaming.data.model.Bancll01Avro.Builder newBuilder() {
+    return new it.luca.streaming.data.model.Bancll01Avro.Builder();
   }
 
   /**
@@ -194,8 +194,8 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
    * @param other The existing builder to copy.
    * @return A new Bancll01Avro RecordBuilder
    */
-  public static Bancll01Avro.Builder newBuilder(Bancll01Avro.Builder other) {
-    return new Bancll01Avro.Builder(other);
+  public static it.luca.streaming.data.model.Bancll01Avro.Builder newBuilder(it.luca.streaming.data.model.Bancll01Avro.Builder other) {
+    return new it.luca.streaming.data.model.Bancll01Avro.Builder(other);
   }
 
   /**
@@ -203,8 +203,8 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
    * @param other The existing instance to copy.
    * @return A new Bancll01Avro RecordBuilder
    */
-  public static Bancll01Avro.Builder newBuilder(Bancll01Avro other) {
-    return new Bancll01Avro.Builder(other);
+  public static it.luca.streaming.data.model.Bancll01Avro.Builder newBuilder(it.luca.streaming.data.model.Bancll01Avro other) {
+    return new it.luca.streaming.data.model.Bancll01Avro.Builder(other);
   }
 
   /**
@@ -228,7 +228,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(Bancll01Avro.Builder other) {
+    private Builder(it.luca.streaming.data.model.Bancll01Avro.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.first_name)) {
         this.first_name = data().deepCopy(fields()[0].schema(), other.first_name);
@@ -256,7 +256,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
      * Creates a Builder by copying an existing Bancll01Avro instance
      * @param other The existing instance to copy.
      */
-    private Builder(Bancll01Avro other) {
+    private Builder(it.luca.streaming.data.model.Bancll01Avro other) {
             super(SCHEMA$);
       if (isValidValue(fields()[0], other.first_name)) {
         this.first_name = data().deepCopy(fields()[0].schema(), other.first_name);
@@ -293,7 +293,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * @param value The value of 'first_name'.
       * @return This builder.
       */
-    public Bancll01Avro.Builder setFirstName(java.lang.String value) {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder setFirstName(java.lang.String value) {
       validate(fields()[0], value);
       this.first_name = value;
       fieldSetFlags()[0] = true;
@@ -313,7 +313,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * Clears the value of the 'first_name' field.
       * @return This builder.
       */
-    public Bancll01Avro.Builder clearFirstName() {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder clearFirstName() {
       first_name = null;
       fieldSetFlags()[0] = false;
       return this;
@@ -332,7 +332,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * @param value The value of 'last_name'.
       * @return This builder.
       */
-    public Bancll01Avro.Builder setLastName(java.lang.String value) {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder setLastName(java.lang.String value) {
       validate(fields()[1], value);
       this.last_name = value;
       fieldSetFlags()[1] = true;
@@ -352,7 +352,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * Clears the value of the 'last_name' field.
       * @return This builder.
       */
-    public Bancll01Avro.Builder clearLastName() {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder clearLastName() {
       last_name = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -371,7 +371,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * @param value The value of 'birth_date'.
       * @return This builder.
       */
-    public Bancll01Avro.Builder setBirthDate(java.lang.String value) {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder setBirthDate(java.lang.String value) {
       validate(fields()[2], value);
       this.birth_date = value;
       fieldSetFlags()[2] = true;
@@ -391,7 +391,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * Clears the value of the 'birth_date' field.
       * @return This builder.
       */
-    public Bancll01Avro.Builder clearBirthDate() {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder clearBirthDate() {
       birth_date = null;
       fieldSetFlags()[2] = false;
       return this;
@@ -410,7 +410,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * @param value The value of 'insert_ts'.
       * @return This builder.
       */
-    public Bancll01Avro.Builder setInsertTs(java.lang.String value) {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder setInsertTs(java.lang.String value) {
       validate(fields()[3], value);
       this.insert_ts = value;
       fieldSetFlags()[3] = true;
@@ -430,7 +430,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * Clears the value of the 'insert_ts' field.
       * @return This builder.
       */
-    public Bancll01Avro.Builder clearInsertTs() {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder clearInsertTs() {
       insert_ts = null;
       fieldSetFlags()[3] = false;
       return this;
@@ -449,7 +449,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * @param value The value of 'insert_dt'.
       * @return This builder.
       */
-    public Bancll01Avro.Builder setInsertDt(java.lang.String value) {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder setInsertDt(java.lang.String value) {
       validate(fields()[4], value);
       this.insert_dt = value;
       fieldSetFlags()[4] = true;
@@ -469,7 +469,7 @@ public class Bancll01Avro extends org.apache.avro.specific.SpecificRecordBase im
       * Clears the value of the 'insert_dt' field.
       * @return This builder.
       */
-    public Bancll01Avro.Builder clearInsertDt() {
+    public it.luca.streaming.data.model.Bancll01Avro.Builder clearInsertDt() {
       insert_dt = null;
       fieldSetFlags()[4] = false;
       return this;
