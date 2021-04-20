@@ -1,6 +1,6 @@
 package it.luca.streaming.core.controller;
 
-import it.luca.streaming.core.model.SourceResponse;
+import it.luca.streaming.core.model.ControllerResponse;
 import it.luca.streaming.core.repository.SourceSpecification;
 import it.luca.streaming.core.service.SourceService;
 import it.luca.streaming.core.utils.DatePattern;
@@ -42,7 +42,7 @@ public class SourceController {
     }
 
     @PostMapping("/bancll01")
-    public ResponseEntity<SourceResponse> bancll01(@RequestBody String string) {
+    public ResponseEntity<ControllerResponse> bancll01(@RequestBody String string) {
 
         BiFunction<Bancll01XML, String, List<Bancll01Avro>> avroFunction = (bancll01XML, s) ->
                 bancll01XML.getPeople().stream().map(person -> Bancll01Avro.newBuilder()
@@ -68,7 +68,7 @@ public class SourceController {
                 .partitionValueRecords(avroFunction)
                 .build();
 
-        SourceResponse sourceResponse = sourceService.store(string, sourceSpecification);
-        return new ResponseEntity<>(sourceResponse, HttpStatus.OK);
+        ControllerResponse response = new ControllerResponse(DataSourceId.BANCLL_01, sourceService.store(string, sourceSpecification));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
