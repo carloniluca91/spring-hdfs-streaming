@@ -3,174 +3,18 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.2</version>
-		<relativePath/>
-	</parent>
-
 	<groupId>it.luca.streaming</groupId>
 	<artifactId>hdfs-avro-streaming</artifactId>
 	<version>0.1.0</version>
+	<packaging>pom</packaging>
 	<description>Spring Boot Application for storing .avro data on HDFS</description>
 	<organization>
 		<name>it.luca</name>
 	</organization>
 
-	<properties>
-		<java.version>8</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+	<modules>
+		<module>core</module>
+		<module>data-model</module>
+	</modules>
 
-		<avro.version>1.8.2</avro.version>
-		<hadoop.version>2.6.0-cdh5.13.0</hadoop.version>
-		<hive.version>1.1.0-cdh5.13.0</hive.version>
-		<impala.driver.version>2.6.15</impala.driver.version>
-		<jdbi.version>3.16.0</jdbi.version>
-	</properties>
-
-	<repositories>
-		<repository>
-			<id>cloudera</id>
-			<name>cloudera</name>
-			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-		</repository>
-	</repositories>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.avro</groupId>
-				<artifactId>avro-maven-plugin</artifactId>
-				<version>${avro.version}</version>
-				<configuration>
-					<sourceDirectory>${project.basedir}/src/main/resources/avro/</sourceDirectory>
-					<outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
-					<stringType>String</stringType>
-					<fieldVisibility>private</fieldVisibility>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>schema</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.jdbi</groupId>
-				<artifactId>jdbi3-bom</artifactId>
-				<type>pom</type>
-				<version>${jdbi.version}</version>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-xml</artifactId>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
-		<dependency>
-			<groupId>org.apache.avro</groupId>
-			<artifactId>avro</artifactId>
-			<version>${avro.version}</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-client -->
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-client</artifactId>
-			<version>${hadoop.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc -->
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-jdbc</artifactId>
-			<version>${hive.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.eclipse.jetty.aggregate</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- Impala JDBC driver -->
-		<dependency>
-			<groupId>com.cloudera.impala</groupId>
-			<artifactId>impala-jdbc-42</artifactId>
-			<version>${impala.driver.version}</version>
-		</dependency>
-
-		<!-- JDBI dependencies -->
-		<dependency>
-			<groupId>org.jdbi</groupId>
-			<artifactId>jdbi3-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jdbi</groupId>
-			<artifactId>jdbi3-sqlobject</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jdbi</groupId>
-			<artifactId>jdbi3-stringtemplate4</artifactId>
-		</dependency>
-	</dependencies>
 </project>
