@@ -1,1 +1,0 @@
-INVALIDATE METADATA <name>

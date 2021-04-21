@@ -7,6 +7,7 @@ import lombok.Getter;
 import java.util.Optional;
 
 import static it.luca.streaming.core.utils.Utils.now;
+import static it.luca.streaming.core.utils.Utils.orElse;
 
 @Getter
 public class ControllerResponse {
@@ -18,13 +19,13 @@ public class ControllerResponse {
     private final String statusCode;
     private final String statusMessage;
 
-    public ControllerResponse(DataSourceId dataSourceId, Optional<Exception> optionalException) {
+    public ControllerResponse(DataSourceId dataSourceId, Exception exception) {
 
         messageTs = now(DatePattern.DEFAULT_TIMESTAMP);
         messageDt = now(DatePattern.DEFAULT_DATE);
         this.dataSourceId = dataSourceId.name();
         this.dataSourceType = dataSourceId.getDataSourceType().name();
-        statusCode = optionalException.isPresent() ? "KO": "OK";
-        statusMessage = optionalException.map(Exception::getMessage).orElse("Message received");
+        statusCode = orElse(exception, e -> "KO", "OK");
+        statusMessage = orElse(exception, Exception::getMessage, "Message received");
     }
 }

@@ -10,10 +10,6 @@ import java.util.stream.Stream;
 
 public class Utils {
 
-    public static String className(Class<?> clazz) {
-        return clazz.getSimpleName();
-    }
-
     public static <T> String mkString(String separator, List<T> values) {
 
         return toStreamOf(values, String::valueOf)
@@ -30,11 +26,16 @@ public class Utils {
         return now().format(DateTimeFormatter.ofPattern(pattern));
     }
 
-    public static <T, R> R orNull(T t, Function<T, R> trFunction) {
+    public static <T, R> R orElse(T t, Function<T, R> trFunction, R elseValue) {
 
         return Optional.ofNullable(t)
                 .map(trFunction)
-                .orElse(null);
+                .orElse(elseValue);
+    }
+
+    public static <T, R> R orNull(T t, Function<T, R> trFunction) {
+
+        return orElse(t, trFunction, null);
     }
 
     public static <T, R> Stream<R> toStreamOf(List<T> values, Function<T, R> trFunction) {

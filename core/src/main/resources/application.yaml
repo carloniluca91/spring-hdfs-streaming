@@ -8,12 +8,9 @@ hdfs:
     schemasRoot: /user/${hdfs.user}/applications/${appName}/schema/
     permissions: -rwxr-xr-x
 
-jdbc:
-  hive:
-    url: jdbc:hive2://${hdfs.defaultNode}:10000/${appName}
-    driver: org.apache.hive.jdbc.HiveDriver
-  impala:
-    url: jdbc:impala://${hdfs.defaultNode}:21050/${appName}
-    driver: com.cloudera.impala.jdbc.Driver
+impala:
+  url: jdbc:impala://${hdfs.defaultNode}:21050
+  driver: com.cloudera.impala.jdbc.Driver
+  db: ${appName}
   table:
-    prefix: t_rw_ingested_
+    ingestionLog: t_ingestion_log

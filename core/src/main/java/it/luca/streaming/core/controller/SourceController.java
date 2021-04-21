@@ -68,7 +68,6 @@ public class SourceController {
                 .partitionValueRecords(avroFunction)
                 .build();
 
-        ControllerResponse response = new ControllerResponse(DataSourceId.BANCLL_01, sourceService.store(string, sourceSpecification));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(sourceService.store(string, sourceSpecification), HttpStatus.OK);
     }
 }

@@ -1,8 +1,5 @@
 package it.luca.streaming.core.repository;
 
-import com.cloudera.impala.jdbc.DataSource;
-import it.luca.streaming.core.dao.HiveDao;
-import it.luca.streaming.core.dao.ImpalaDao;
 import it.luca.streaming.core.utils.DatePattern;
 import it.luca.streaming.data.enumeration.DataSourceId;
 import lombok.extern.slf4j.Slf4j;
@@ -14,22 +11,17 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedAction;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static it.luca.streaming.core.utils.HDFSUtils.joinPaths;
-import static it.luca.streaming.core.utils.Utils.*;
+import static it.luca.streaming.core.utils.Utils.mkString;
+import static it.luca.streaming.core.utils.Utils.now;
 
 @Slf4j
 @Component
@@ -50,21 +42,6 @@ public class HDFSClient {
     @Value("${hdfs.path.permissions}")
     private String pathPermissions;
 
-    @Value("${jdbc.hive.url}")
-    private String hiveJdbcUrl;
-
-    @Value("${jdbc.hive.driver}")
-    private String hiveJdbcDriver;
-
-    @Value("${jdbc.impala.url}")
-    private String impalaJdbcUrl;
-
-    @Value("${jdbc.impala.driver}")
-    private String impalaJdbcDriver;
-
-    private Jdbi hiveJdbi;
-    private Jdbi impalaJdbi;
-
     public <T, A extends SpecificRecord, P> void write(T payload, SourceSpecification<T, A, P> sourceSpecification) {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
@@ -75,17 +52,13 @@ public class HDFSClient {
         UserGroupInformation userGroupInformation = UserGroupInformation.createRemoteUser(hdfsUser);
         userGroupInformation.doAs((PrivilegedAction<Object>) () -> {
             try {
-                // Instantiate Jdbi instances and FileSystem connection
-                initJdbiInstances();
+                // Instantiate FileSystem connection and define table's root path
                 FileSystem fileSystem = FileSystem.get(URI.create(fsUri), new Configuration());
-                log.info("Initialized Hive {}, Impala {} and {} instance", className(Jdbi.class), className(Jdbi.class), className(FileSystem.class));
-
-                // First define table's root path and then create table itself
+                log.info("Initialized {} instance", FileSystem.class.getName());
                 String tablePath = joinPaths(landingRootPath, sourceSpecification.getTableName());
                 createPathIfNotExists(fileSystem, tablePath, pathPermissions);
-                createTableIfNotExists(sourceSpecification);
 
-                // Write data into their partitions
+                // Write data into respective partitions
                 DataFileWriter<A> dataFileWriter = new DataFileWriter<>(new SpecificDatumWriter<>(sourceSpecification.getAvroClass()));
                 for (P partitionValue: partitionValues) {
 
@@ -95,36 +68,22 @@ public class HDFSClient {
 
                     // Write .avro file containing current partition's records
                     String fileName = String.format("%s_%s.avro", dataSourceId.name().toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
-                    String avroFilePath = joinPaths(tablePlusPartitionPath, fileName);
+                    Path avroFilePath = new Path(joinPaths(tablePlusPartitionPath, fileName));
                     List<A> avroRecords = sourceSpecification.getPartitionValueRecords().apply(payload, partitionValue);
                     log.info("{} - Saving {} Avro record(s) at HDFS path {}", dataSourceId, avroRecords.size(), tablePlusPartitionPath);
-                    dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(new Path(avroFilePath), false));
+                    dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(avroFilePath, false));
                     for (A avroRecord: avroRecords) {
                         dataFileWriter.append(avroRecord);
                     }
                     log.info("{} - Saved all of {} Avro record(s) at HDFS path {}", dataSourceId, avroRecords.size(), tablePlusPartitionPath);
                 }
-
-                // Close data writer and update table metadata
+                // Close data writer
                 dataFileWriter.close();
-                updateMetadata(partitionValues, sourceSpecification);
             } catch (Exception e) {
                 log.error("{} - Caught exception while saving data. Stack trace:", dataSourceId, e);
             }
             return null;
         });
-    }
-
-    private void initJdbiInstances() throws ClassNotFoundException, SQLException {
-
-        Class.forName(hiveJdbcDriver);
-        Connection hiveJdbcConnection = DriverManager.getConnection(hiveJdbcUrl);
-        hiveJdbi = Jdbi.create(hiveJdbcConnection).installPlugin(new SqlObjectPlugin());
-
-        Class.forName(impalaJdbcDriver);
-        DataSource dataSource = new com.cloudera.impala.jdbc.DataSource();
-        dataSource.setURL(impalaJdbcUrl);
-        impalaJdbi = Jdbi.create(dataSource).installPlugin(new SqlObjectPlugin());
     }
 
     private void createPathIfNotExists(FileSystem fileSystem, String pathString, String pathPermissions) throws IOException {
@@ -136,61 +95,6 @@ public class HDFSClient {
             log.info("Created path {} with permissions {}", path, pathPermissions);
         } else {
             log.info("Path {} exists already", path);
-        }
-    }
-
-    private  <P> void createTableIfNotExists(SourceSpecification<?, ?, P> sourceSpecification) {
-
-        DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
-        String tableName = sourceSpecification.getTableName();
-
-        // Retrieve existing tables
-        List<String> existingTables = impalaJdbi.withHandle(handle -> handle.attach(ImpalaDao.class).showTables());
-        if (existingTables.stream().anyMatch(s -> s.equalsIgnoreCase(tableName))) {
-            log.info("{} - Table {} already exists", dataSourceId, tableName);
-        } else {
-
-            // If table does not exist yet, create it using Hive Jdbi and execute invalidate metadata using Impala Jdbi
-            String partitionClause = sourceSpecification.getPartitionClause();
-            String tableLocation = joinPaths(landingRootPath, tableName);
-            String avroSchemaLocation = joinPaths(schemasRootPath, sourceSpecification.getAvroSchemaFile());
-            log.warn("{} - Table {} does not exist yet. Creating it now with partitionClause ({}), location {}, avro schema location {}",
-                    dataSourceId, tableName, partitionClause, tableLocation, avroSchemaLocation);
-            hiveJdbi.useHandle(handle -> handle.attach(HiveDao.class)
-                    .createTable(tableName, partitionClause, tableLocation, avroSchemaLocation));
-            log.info("{} - Created table {} with partitionClause ({}), location {}, avro schema location {}",
-                    dataSourceId, tableName, partitionClause, tableLocation, avroSchemaLocation);
-            impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).invalidateMetadata(tableName));
-        }
-    }
-
-    private  <P> void updateMetadata(List<P> batchPartitionValues, SourceSpecification<?, ?, P> sourceSpecification) {
-
-        DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
-        String tableName = sourceSpecification.getTableName();
-
-        // Retrieve existing partition's values
-        List<String> existingPartitionValues = impalaJdbi.withHandle(handle -> handle.attach(ImpalaDao.class)
-                .getPartitionValues(tableName, sourceSpecification.getPartitionColumn()));
-
-        // New partition values brought by current batch
-        List<String> newPartitionValues = toStreamOf(batchPartitionValues, String::valueOf)
-                .filter(i -> !existingPartitionValues.contains(i))
-                .collect(Collectors.toList());
-
-        if (newPartitionValues.isEmpty()) {
-
-            // Just refresh table using Impala Jdbi
-            log.info("{} - All partitions embedded in current batch ({}) exist already", dataSourceId, mkString("|", batchPartitionValues));
-            impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).refresh(tableName));
-        } else {
-
-            // If new partitions have been added, run metastore check (MSCK) using Hive Jdbi and invalidate metadata using Impala Jdbi
-            log.info("{} - New partitions embedded in current batch are ({}). Need to update table metadata",
-                    dataSourceId, mkString("|", newPartitionValues));
-            hiveJdbi.useHandle(handle -> handle.attach(HiveDao.class).msck(tableName));
-            impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).invalidateMetadata(tableName));
-            log.info("{} - Updated metadata for table {}", dataSourceId, tableName);
         }
     }
 }
