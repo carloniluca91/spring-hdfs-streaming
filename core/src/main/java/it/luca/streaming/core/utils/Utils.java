@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Utils {
 
     public static <T> String mkString(String separator, List<T> values) {
 
-        return toStreamOf(values, String::valueOf)
+        return values.stream()
+                .map(String::valueOf)
                 .collect(Collectors.joining(separator));
     }
 
@@ -26,20 +26,16 @@ public class Utils {
         return now().format(DateTimeFormatter.ofPattern(pattern));
     }
 
-    public static <T, R> R orElse(T t, Function<T, R> trFunction, R elseValue) {
+    public static <T, R> R orElse(T t, Function<T, R> function, R elseValue) {
 
         return Optional.ofNullable(t)
-                .map(trFunction)
+                .map(function)
                 .orElse(elseValue);
     }
 
-    public static <T, R> R orNull(T t, Function<T, R> trFunction) {
+    public static <T, R> R orNull(T t, Function<T, R> function) {
 
-        return orElse(t, trFunction, null);
+        return orElse(t, function, null);
     }
 
-    public static <T, R> Stream<R> toStreamOf(List<T> values, Function<T, R> trFunction) {
-
-        return values.stream().map(trFunction);
-    }
 }

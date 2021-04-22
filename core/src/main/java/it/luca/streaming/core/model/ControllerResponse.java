@@ -2,6 +2,7 @@ package it.luca.streaming.core.model;
 
 import it.luca.streaming.core.utils.DatePattern;
 import it.luca.streaming.data.enumeration.DataSourceId;
+import it.luca.streaming.data.enumeration.IngestionOperationCode;
 import lombok.Getter;
 
 import static it.luca.streaming.core.utils.Utils.now;
@@ -14,8 +15,8 @@ public class ControllerResponse {
     private final String messageDt;
     private final String dataSourceId;
     private final String dataSourceType;
-    private final String statusCode;
-    private final String statusMessage;
+    private final IngestionOperationCode ingestionOperationCode;
+    private final String ingestionOperationMessage;
 
     public ControllerResponse(DataSourceId dataSourceId, Exception exception) {
 
@@ -23,7 +24,7 @@ public class ControllerResponse {
         messageDt = now(DatePattern.DEFAULT_DATE);
         this.dataSourceId = dataSourceId.name();
         this.dataSourceType = dataSourceId.getDataSourceType().name();
-        statusCode = orElse(exception, e -> "KO", "OK");
-        statusMessage = orElse(exception, Exception::getMessage, "Message received");
+        ingestionOperationCode = orElse(exception, e -> IngestionOperationCode.KO, IngestionOperationCode.OK);
+        ingestionOperationMessage = orElse(exception, Exception::getMessage, "Message received");
     }
 }

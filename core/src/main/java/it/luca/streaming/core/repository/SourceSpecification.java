@@ -12,7 +12,7 @@ import java.util.function.Function;
 /**
  * Class that synthesizes source's specifications
  * @param <T>: type of deserialized source data
- * @param <A>: type of Avro records to be generated
+ * @param <A>: type of Avro records to be generated from deserialized data
  * @param <P>: type of source partition values
  */
 
@@ -25,10 +25,10 @@ public class SourceSpecification<T, A extends SpecificRecord, P> {
     private final Class<A> avroRecordClass;
     private final String partitionColumnName;
 
-    // Function that, given a batch of input data, returns its distinct partition values
+    // Function that, given a sample of input data, returns its distinct partition values
     private final Function<T, List<P>> partitionValuesFunction;
 
-    // Function that, given a batch of input data and a partition value, returns the set of Avro records belonging to such partition
+    // Function that, given a sample of input data and a partition value, returns the set of Avro records belonging to such partition
     private final BiFunction<T, P, List<A>> partitionValueRecords;
 
     public String getTableName() {
