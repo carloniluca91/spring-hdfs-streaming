@@ -36,10 +36,11 @@ public class SourceController {
     @Autowired
     private SourceService sourceService;
 
-    private String tableName(DataSourceId dataSourceId) {
-
-        return tableNamePrefix.toLowerCase() + dataSourceId.name().toLowerCase();
-    }
+    /**
+     * Receive and store data for dataSource BANCLL01
+     * @param string: input data
+     * @return ResponseEntity with small ingestion operation report
+     */
 
     @PostMapping("/bancll01")
     public ResponseEntity<ControllerResponse> bancll01(@RequestBody String string) {
@@ -58,12 +59,9 @@ public class SourceController {
         SourceSpecification<Bancll01XML, Bancll01Avro, String> sourceSpecification = SourceSpecification
                 .<Bancll01XML, Bancll01Avro, String>builder()
                 .dataSourceId(DataSourceId.BANCLL_01)
-                .tClass(Bancll01XML.class)
-                .avroClass(Bancll01Avro.class)
-                .tableName(tableName(DataSourceId.BANCLL_01))
-                .partitionColumn("dt_business_date")
-                .partitionColumnType("string")
-                .avroSchemaFile("bancll01.avsc")
+                .dataInputClass(Bancll01XML.class)
+                .avroRecordClass(Bancll01Avro.class)
+                .partitionColumnName("dt_business_date")
                 .partitionValuesFunction(partitioningFunction)
                 .partitionValueRecords(avroFunction)
                 .build();

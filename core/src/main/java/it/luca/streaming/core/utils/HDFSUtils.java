@@ -8,7 +8,8 @@ public class HDFSUtils {
 
     public static String joinPaths(String first, String second) {
 
-        Function<String, String> function = s -> s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
-        return String.join(Path.SEPARATOR, function.apply(first), function.apply(second));
+        Function<String, String> cutFinalSlash = s -> s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
+        Function<String, String> cutBeginningSlash = s -> s.startsWith("/") ? s.substring(1) : s;
+        return String.join(Path.SEPARATOR, cutFinalSlash.apply(first), cutBeginningSlash.andThen(cutFinalSlash).apply(second));
     }
 }

@@ -4,8 +4,6 @@ import it.luca.streaming.core.utils.DatePattern;
 import it.luca.streaming.data.enumeration.DataSourceId;
 import lombok.Getter;
 
-import java.util.Optional;
-
 import static it.luca.streaming.core.utils.Utils.now;
 import static it.luca.streaming.core.utils.Utils.orElse;
 

@@ -19,18 +19,6 @@ public class ObjectDeserializer {
     private final static ObjectMapper xmlMapper = new XmlMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    public static <T> T readValue(String content, Class<T> valueType, DataSourceType dataSourceType) throws JsonProcessingException {
-
-        String className = valueType.getSimpleName();
-        log.info("Deserializing input {} content as instance of {}", dataSourceType, className);
-        T payload = (dataSourceType == DataSourceType.JSON) ?
-                jsonMapper.readValue(content, valueType) :
-                xmlMapper.readValue(content, valueType);
-
-        log.info("Deserialized input {} content as instance of {}", dataSourceType, className);
-        return payload;
-    }
-
     public static <T> T readValue(InputStream inputStream, Class<T> valueType, DataSourceType dataSourceType) throws IOException {
 
         String className = valueType.getSimpleName();
@@ -38,6 +26,18 @@ public class ObjectDeserializer {
         T payload = (dataSourceType == DataSourceType.JSON) ?
                 jsonMapper.readValue(inputStream, valueType) :
                 xmlMapper.readValue(inputStream, valueType);
+
+        log.info("Deserialized input {} content as instance of {}", dataSourceType, className);
+        return payload;
+    }
+
+    public static <T> T readValue(String content, Class<T> valueType, DataSourceType dataSourceType) throws JsonProcessingException {
+
+        String className = valueType.getSimpleName();
+        log.info("Deserializing input {} content as instance of {}", dataSourceType, className);
+        T payload = (dataSourceType == DataSourceType.JSON) ?
+                jsonMapper.readValue(content, valueType) :
+                xmlMapper.readValue(content, valueType);
 
         log.info("Deserialized input {} content as instance of {}", dataSourceType, className);
         return payload;

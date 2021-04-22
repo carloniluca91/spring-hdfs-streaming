@@ -7,13 +7,12 @@ import it.luca.streaming.core.model.ControllerResponse;
 import it.luca.streaming.core.repository.HDFSClient;
 import it.luca.streaming.core.repository.SourceSpecification;
 import it.luca.streaming.data.enumeration.DataSourceId;
+import it.luca.streaming.data.utils.ObjectDeserializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import static it.luca.streaming.data.utils.ObjectDeserializer.readValue;
 
 @Slf4j
 @Component
@@ -25,27 +24,38 @@ public class SourceService {
     @Autowired
     private ImpalaDaoImpl impalaDao;
 
+    /**
+     * Deserializes input data as as instance of T, convert such instance to a set of avro records of type A and store them on HDFS
+     * @param input: input data
+     * @param sourceSpecification: set of source's specification
+     * @param <T>: type of deserialized input data
+     * @param <A>: type of avro record to be generated from deserialized input data
+     * @return ingestion operation report
+     */
+
     public <T, A extends SpecificRecord> ControllerResponse store(String input, SourceSpecification<T, A, ?> sourceSpecification) {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
-        Class<T> tClass = sourceSpecification.getTClass();
+        Class<T> dataInputClass = sourceSpecification.getDataInputClass();
+        Exception exception = null;
         try {
             if (!StringUtils.isBlank(input)) {
-                log.info("{} - Received call. Input:\n\n{}\n", dataSourceId, input);
-                T payload = readValue(input, tClass, dataSourceId.getDataSourceType());
+                log.info("{} - Call received. Input:\n\n{}\n", dataSourceId, input);
+                T payload = ObjectDeserializer.readValue(input, dataInputClass, dataSourceId.getDataSourceType());
                 hdfsClient.write(payload, sourceSpecification);
-                impalaDao.saveIngestionLogRecord(dataSourceId, null);
-                return new ControllerResponse(dataSourceId, null);
             } else {
                 throw new EmptyInputException(dataSourceId);
             }
-        } catch (Exception exception) {
-            String errorMsg = (exception instanceof JsonProcessingException) | (exception instanceof EmptyInputException) ?
+        } catch (Exception caughtException) {
+            String errorMsg = (caughtException instanceof JsonProcessingException) | (caughtException instanceof EmptyInputException) ?
                     "Caught exception while processing given input" :
                     "Caught exception while saving deserialized data";
-            log.error("{} - {}. Stack trace: ", dataSourceId, errorMsg, exception);
-            impalaDao.saveIngestionLogRecord(dataSourceId, exception);
-            return new ControllerResponse(dataSourceId, exception);
+            log.error("{} - {}. Stack trace: ", dataSourceId, errorMsg, caughtException);
+            exception = caughtException;
         }
+
+        // Log ingestion operation
+        impalaDao.saveIngestionLogRecord(dataSourceId, exception);
+        return new ControllerResponse(dataSourceId, exception);
     }
 }

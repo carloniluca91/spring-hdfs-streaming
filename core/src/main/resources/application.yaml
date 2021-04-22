@@ -4,8 +4,7 @@ hdfs:
   defaultNode: quickstart.cloudera
   fsUri: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}
   path:
-    landingRoot: /user/${hdfs.user}/applications/${appName}/landing/
-    schemasRoot: /user/${hdfs.user}/applications/${appName}/schema/
+    landing: /user/${hdfs.user}/applications/${appName}/landing/
     permissions: -rwxr-xr-x
 
 impala:
