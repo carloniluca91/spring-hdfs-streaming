@@ -47,6 +47,6 @@ public class WebdispSpecification extends SourceSpecification<WebdispWrapper, We
 
         return input.getNomine().stream()
                 .map(x -> gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA))
-                .collect(Collectors.toList());
+                .distinct().collect(Collectors.toList());
     }
 }

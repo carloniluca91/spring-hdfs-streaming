@@ -28,14 +28,14 @@
 		<profile>
 			<id>dev</id>
 			<properties>
-				<appName>lake_cedacri_d</appName>
+				<application.name>1357_disp_dev</application.name>
 				<spring.profiles.active>dev</spring.profiles.active>
 			</properties>
 		</profile>
 		<profile>
 			<id>prod</id>
 			<properties>
-				<appName>lake_cedacri_p</appName>
+				<application.name>1357_disp_prod</application.name>
 				<spring.profiles.active>prod</spring.profiles.active>
 			</properties>
 		</profile>
@@ -51,6 +51,9 @@
 		<hadoop.version>2.6.0-cdh5.13.0</hadoop.version>
 		<impala.driver.version>2.6.15</impala.driver.version>
 		<jdbi.version>3.16.0</jdbi.version>
+
+		<impala.dbName>${application.name}</impala.dbName>
+		<impala.log.tableName>t_ingestion_log</impala.log.tableName>
 	</properties>
 
 	<build>

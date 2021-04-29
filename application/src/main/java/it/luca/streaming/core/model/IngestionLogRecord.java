@@ -16,7 +16,7 @@ public class IngestionLogRecord {
     private final String ingestionDt = now(DatePattern.DEFAULT_DATE);
     private final String dataSourceId;
     private final String dataSourceType;
-    private final IngestionOperationCode ingestionOperationCode;
+    private final String ingestionOperationCode;
     private final String ingestionOperationExceptionClass;
     private final String ingestionOperationExceptionMessage;
 
@@ -24,7 +24,7 @@ public class IngestionLogRecord {
 
         this.dataSourceId = dataSourceId.name();
         this.dataSourceType = dataSourceId.getDataSourceType().name();
-        ingestionOperationCode = orElse(exception, e -> IngestionOperationCode.KO, IngestionOperationCode.OK);
+        ingestionOperationCode = orElse(exception, e -> IngestionOperationCode.KO, IngestionOperationCode.OK).name();
         ingestionOperationExceptionClass = orNull(exception, e -> e.getClass().getName());
         ingestionOperationExceptionMessage = orNull(exception, Exception::getMessage);
     }

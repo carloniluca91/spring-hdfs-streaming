@@ -1,15 +1,13 @@
-appName: @appName@
 hdfs:
   user: cloudera
-  defaultNode: quickstart.cloudera
-  fsUri: hdfs://${hdfs.defaultNode}:8020/user/${hdfs.user}
+  fsUri: hdfs://quickstart.cloudera:8020/user/cloudera
   path:
-    landing: /user/${hdfs.user}/applications/${appName}/landing/
+    landing: /user/cloudera/applications/@application.name@/landing/
     permissions: -rwxr-xr-x
 
 impala:
-  url: jdbc:impala://${hdfs.defaultNode}:21050
+  url: jdbc:impala://quickstart.cloudera:21050
   driver: com.cloudera.impala.jdbc.Driver
-  db: @appName@
+  db: @impala.dbName@
   table:
-    ingestionLog: t_ingestion_log
+    ingestionLog: @impala.log.tableName@

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS <fqTableName> (
+CREATE TABLE IF NOT EXISTS @impala.dbName@.@impala.log.tableName@ (
 
     ingestion_ts TIMESTAMP COMMENT 'Timestamp of ingested batch',
     ingestion_dt STRING COMMENT 'Date of ingested batch (pattern yyyy-MM-dd)',

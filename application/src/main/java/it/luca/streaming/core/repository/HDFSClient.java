@@ -15,6 +15,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
@@ -39,6 +40,14 @@ public class HDFSClient {
 
     @Value("${hdfs.path.permissions}")
     private String pathPermissions;
+
+    @PostConstruct
+    private void init() {
+
+        String ENV_VARIABLE = "HADOOP_USER_NAME";
+        System.setProperty(ENV_VARIABLE, hdfsUser);
+        log.info("Set environment variable {} to {}", ENV_VARIABLE, hdfsUser);
+    }
 
     /**
      * Convert input data into some Avro records and store them on HDFS

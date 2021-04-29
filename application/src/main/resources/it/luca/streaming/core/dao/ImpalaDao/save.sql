@@ -1,4 +1,4 @@
-INSERT INTO <fqTableName> PARTITION (insert_dt)
+INSERT INTO @impala.dbName@.@impala.log.tableName@ PARTITION (insert_dt)
 VALUES (
 :record.getIngestionTs,
 :record.getIngestionDt,

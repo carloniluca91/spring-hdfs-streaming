@@ -51,12 +51,8 @@ public class ImpalaDaoImpl {
     public void saveIngestionLogRecord(DataSourceId dataSourceId, Exception exception) {
 
         IngestionLogRecord ingestionLogRecord = new IngestionLogRecord(dataSourceId, exception);
-        impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).save(fqTableName(ingestionTable), ingestionLogRecord));
+        impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).save(ingestionLogRecord));
         log.info("Saved instance of {}", IngestionLogRecord.class.getSimpleName());
-    }
-
-    private String fqTableName(String tableName) {
-        return String.format("%s.%s", impalaDb, tableName);
     }
 
     private void createDb() {
@@ -66,7 +62,7 @@ public class ImpalaDaoImpl {
             if (impalaDao.showDatabases().stream()
                     .noneMatch(s -> s.equalsIgnoreCase(impalaDb))) {
                 log.warn("Db {} does not exist yet. Creating it now", impalaDb);
-                impalaDao.createDb(impalaDb);
+                impalaDao.createDb();
                 log.info("Created DB {}", impalaDb);
             }
         });
@@ -76,11 +72,11 @@ public class ImpalaDaoImpl {
 
         impalaJdbi.useHandle(handle -> {
             ImpalaDao impalaDao = handle.attach(ImpalaDao.class);
-            if (impalaDao.showTablesIn(impalaDb).stream()
+            if (impalaDao.showTables().stream()
                     .noneMatch(s -> s.equalsIgnoreCase(ingestionTable))) {
-                String fqTableName = fqTableName(ingestionTable);
+                String fqTableName = String.format("%s.%s", impalaDb, ingestionTable);
                 log.warn("Table {} does not exist yet. Creating it now", fqTableName);
-                impalaDao.createTable(fqTableName);
+                impalaDao.createTable();
                 log.info("Created table {}", fqTableName);
             }
         });
