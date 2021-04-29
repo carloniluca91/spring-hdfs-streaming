@@ -11,7 +11,7 @@ class IngestionLogRecordTest {
     @Test
     void withoutException() {
 
-        IngestionLogRecord ingestionLogRecord = new IngestionLogRecord(DataSourceId.BANCLL_01, null);
+        IngestionLogRecord ingestionLogRecord = new IngestionLogRecord(DataSourceId.WEBDISP, null);
         assertEquals(IngestionOperationCode.OK, ingestionLogRecord.getIngestionOperationCode());
         assertNull(ingestionLogRecord.getIngestionOperationExceptionClass());
         assertNull(ingestionLogRecord.getIngestionOperationExceptionMessage());
@@ -21,7 +21,7 @@ class IngestionLogRecordTest {
     void withException() {
 
         IllegalArgumentException exception = new IllegalArgumentException("ohiOhi ...");
-        IngestionLogRecord ingestionLogRecord = new IngestionLogRecord(DataSourceId.BANCLL_01, exception);
+        IngestionLogRecord ingestionLogRecord = new IngestionLogRecord(DataSourceId.WEBDISP, exception);
         assertEquals(IngestionOperationCode.KO, ingestionLogRecord.getIngestionOperationCode());
         assertNotNull(ingestionLogRecord.getIngestionOperationExceptionClass());
         assertEquals(exception.getClass().getName(), ingestionLogRecord.getIngestionOperationExceptionClass());

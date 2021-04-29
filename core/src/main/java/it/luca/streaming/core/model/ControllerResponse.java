@@ -1,12 +1,12 @@
 package it.luca.streaming.core.model;
 
-import it.luca.streaming.core.utils.DatePattern;
+import it.luca.streaming.data.utils.DatePattern;
 import it.luca.streaming.data.enumeration.DataSourceId;
 import it.luca.streaming.data.enumeration.IngestionOperationCode;
 import lombok.Getter;
 
-import static it.luca.streaming.core.utils.Utils.now;
-import static it.luca.streaming.core.utils.Utils.orElse;
+import static it.luca.streaming.data.utils.Utils.now;
+import static it.luca.streaming.data.utils.Utils.orElse;
 
 @Getter
 public class ControllerResponse {

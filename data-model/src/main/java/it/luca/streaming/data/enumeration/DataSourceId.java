@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum DataSourceId {
 
-    BANCLL_01(DataSourceType.XML);
+    WEBDISP(DataSourceType.XML);
 
     private final DataSourceType dataSourceType;
 }

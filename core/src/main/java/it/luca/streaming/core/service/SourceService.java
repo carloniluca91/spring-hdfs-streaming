@@ -5,8 +5,8 @@ import it.luca.streaming.core.dao.ImpalaDaoImpl;
 import it.luca.streaming.core.exception.EmptyInputException;
 import it.luca.streaming.core.model.ControllerResponse;
 import it.luca.streaming.core.repository.HDFSClient;
-import it.luca.streaming.core.repository.SourceSpecification;
 import it.luca.streaming.data.enumeration.DataSourceId;
+import it.luca.streaming.data.model.common.SourceSpecification;
 import it.luca.streaming.data.utils.ObjectDeserializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
@@ -36,7 +36,7 @@ public class SourceService {
     public <T, A extends SpecificRecord> ControllerResponse store(String input, SourceSpecification<T, A, ?> sourceSpecification) {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
-        Class<T> dataInputClass = sourceSpecification.getDataInputClass();
+        Class<T> dataInputClass = sourceSpecification.getInputDataClass();
         Exception exception = null;
         try {
             if (!StringUtils.isBlank(input)) {

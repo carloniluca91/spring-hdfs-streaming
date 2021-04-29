@@ -12,7 +12,7 @@ class ControllerResponseTest {
     void withException() {
 
         IllegalArgumentException illegalArgumentException = new IllegalArgumentException("ohiOhi ...");
-        ControllerResponse controllerResponse = new ControllerResponse(DataSourceId.BANCLL_01, illegalArgumentException);
+        ControllerResponse controllerResponse = new ControllerResponse(DataSourceId.WEBDISP, illegalArgumentException);
         assertEquals(IngestionOperationCode.KO, controllerResponse.getIngestionOperationCode());
         assertEquals(illegalArgumentException.getMessage(), controllerResponse.getIngestionOperationMessage());
     }
@@ -20,8 +20,8 @@ class ControllerResponseTest {
     @Test
     void withoutException() {
 
-        ControllerResponse controllerResponse = new ControllerResponse(DataSourceId.BANCLL_01, null);
-        assertEquals(IngestionOperationCode.KO, controllerResponse.getIngestionOperationCode());
+        ControllerResponse controllerResponse = new ControllerResponse(DataSourceId.WEBDISP, null);
+        assertEquals(IngestionOperationCode.OK, controllerResponse.getIngestionOperationCode());
         assertNotNull(controllerResponse.getIngestionOperationMessage());
     }
 }

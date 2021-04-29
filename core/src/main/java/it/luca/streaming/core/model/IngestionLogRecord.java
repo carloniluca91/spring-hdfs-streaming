@@ -1,13 +1,13 @@
 package it.luca.streaming.core.model;
 
-import it.luca.streaming.core.utils.DatePattern;
+import it.luca.streaming.data.utils.DatePattern;
 import it.luca.streaming.data.enumeration.DataSourceId;
 import it.luca.streaming.data.enumeration.IngestionOperationCode;
 import lombok.Getter;
 
 import java.sql.Timestamp;
 
-import static it.luca.streaming.core.utils.Utils.*;
+import static it.luca.streaming.data.utils.Utils.*;
 
 @Getter
 public class IngestionLogRecord {

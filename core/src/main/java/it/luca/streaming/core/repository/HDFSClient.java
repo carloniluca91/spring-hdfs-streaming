@@ -1,6 +1,7 @@
 package it.luca.streaming.core.repository;
 
-import it.luca.streaming.core.utils.DatePattern;
+import it.luca.streaming.data.model.common.SourceSpecification;
+import it.luca.streaming.data.utils.DatePattern;
 import it.luca.streaming.data.enumeration.DataSourceId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.file.DataFileWriter;
@@ -20,8 +21,8 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 import static it.luca.streaming.core.utils.HDFSUtils.joinPaths;
-import static it.luca.streaming.core.utils.Utils.mkString;
-import static it.luca.streaming.core.utils.Utils.now;
+import static it.luca.streaming.data.utils.Utils.mkString;
+import static it.luca.streaming.data.utils.Utils.now;
 
 @Slf4j
 @Component
@@ -51,7 +52,7 @@ public class HDFSClient {
     public <T, A extends SpecificRecord, P> void write(T payload, SourceSpecification<T, A, P> sourceSpecification) throws Exception {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
-        List<P> partitionValues = sourceSpecification.getPartitionValuesFunction().apply(payload);
+        List<P> partitionValues = sourceSpecification.getPartitionValues(payload);
         log.info("{} - Found {} partition value(s) within current batch: ({})",
                 dataSourceId, partitionValues.size(), mkString("|", partitionValues));
 
@@ -73,7 +74,7 @@ public class HDFSClient {
                 Path avroFilePath = new Path(joinPaths(tablePlusPartitionPath, fileName));
 
                 // Retrieve Avro record(s) for such partition
-                List<A> avroRecords = sourceSpecification.getPartitionValueRecords().apply(payload, partitionValue);
+                List<A> avroRecords = sourceSpecification.getAvroRecordsForPartition(payload, partitionValue);
                 log.info("{} - Saving {} Avro record(s) at HDFS path {}", dataSourceId, avroRecords.size(), tablePlusPartitionPath);
                 dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(avroFilePath, false));
                 for (A avroRecord: avroRecords) {
