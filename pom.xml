@@ -3,6 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.4.2</version>
+		<relativePath/>
+	</parent>
+
 	<groupId>it.luca.streaming</groupId>
 	<artifactId>spring-avro-streaming</artifactId>
 	<version>0.1.0</version>
@@ -13,8 +20,58 @@
 	</organization>
 
 	<modules>
-		<module>core</module>
+		<module>application</module>
 		<module>data-model</module>
 	</modules>
 
+	<profiles>
+		<profile>
+			<id>dev</id>
+			<properties>
+				<appName>lake_cedacri_d</appName>
+				<spring.profiles.active>dev</spring.profiles.active>
+			</properties>
+		</profile>
+		<profile>
+			<id>prod</id>
+			<properties>
+				<appName>lake_cedacri_p</appName>
+				<spring.profiles.active>prod</spring.profiles.active>
+			</properties>
+		</profile>
+	</profiles>
+
+	<properties>
+		<java.version>8</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+
+		<data.model.version>0.1.0</data.model.version>
+		<hadoop.version>2.6.0-cdh5.13.0</hadoop.version>
+		<impala.driver.version>2.6.15</impala.driver.version>
+		<jdbi.version>3.16.0</jdbi.version>
+	</properties>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

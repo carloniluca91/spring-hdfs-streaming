@@ -5,27 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.4.2</version>
-        <relativePath/>
+        <groupId>it.luca.streaming</groupId>
+        <artifactId>spring-avro-streaming</artifactId>
+        <version>0.1.0</version>
     </parent>
 
-    <groupId>it.luca.streaming</groupId>
-    <artifactId>core</artifactId>
+    <artifactId>application</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
-    <description>Core - Spring Boot Application</description>
-    <organization>
-        <name>it.luca</name>
-    </organization>
+    <description>Spring Boot Application</description>
 
     <properties>
-        <java.version>8</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-
         <data.model.version>0.1.0</data.model.version>
         <hadoop.version>2.6.0-cdh5.13.0</hadoop.version>
         <impala.driver.version>2.6.15</impala.driver.version>
@@ -45,21 +35,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -80,16 +55,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Data Model module -->
@@ -119,11 +84,6 @@
             <version>${impala.driver.version}</version>
         </dependency>
 
-        <!-- JDBI dependencies -->
-        <dependency>
-            <groupId>org.jdbi</groupId>
-            <artifactId>jdbi3-core</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi3-sqlobject</artifactId>
@@ -133,5 +93,4 @@
             <artifactId>jdbi3-stringtemplate4</artifactId>
         </dependency>
     </dependencies>
-
 </project>

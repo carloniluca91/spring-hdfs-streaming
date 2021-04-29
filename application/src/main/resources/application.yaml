@@ -1,4 +1,4 @@
-appName: lake_cedacri
+appName: @appName@
 hdfs:
   user: cloudera
   defaultNode: quickstart.cloudera
@@ -10,6 +10,6 @@ hdfs:
 impala:
   url: jdbc:impala://${hdfs.defaultNode}:21050
   driver: com.cloudera.impala.jdbc.Driver
-  db: ${appName}
+  db: @appName@
   table:
     ingestionLog: t_ingestion_log
