@@ -3,6 +3,7 @@ hdfs:
   fsUri: hdfs://quickstart.cloudera:8020/user/cloudera
   path:
     landing: /user/cloudera/applications/@application.name@/landing/
+    maxFiles: 3
     permissions: -rwxr-xr-x
 
 impala:
