@@ -7,10 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.avro.specific.SpecificRecord;
+import org.apache.avro.tool.ConcatTool;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -21,13 +21,11 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static it.luca.streaming.core.utils.HDFSUtils.fileSizeMb;
 import static it.luca.streaming.core.utils.HDFSUtils.joinPaths;
-import static it.luca.streaming.data.utils.Utils.mkString;
-import static it.luca.streaming.data.utils.Utils.now;
+import static it.luca.streaming.data.utils.Utils.*;
 
 @Slf4j
 @Component
@@ -42,8 +40,11 @@ public class HDFSClient {
     @Value("${hdfs.path.landing}")
     private String landingPath;
 
-    @Value("${hdfs.path.maxFiles}")
-    private int maxFiles;
+    @Value("${hdfs.file.maxSizeMb}")
+    private int maxFileSizeMb;
+
+    @Value("${hdfs.file.maxNumber}")
+    private int maxSmallFilesNumber;
 
     @Value("${hdfs.path.permissions}")
     private String pathPermissions;
@@ -102,7 +103,7 @@ public class HDFSClient {
                 }
                 log.info("{} - Saved all of {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionPath);
                 dataFileWriter.close();
-                mergePartitionFiles(partitionPath, dataSourceId, fileSystem);
+                mergeFiles(partitionPath, dataSourceId, fileSystem);
             }
             return null;
         });
@@ -127,42 +128,62 @@ public class HDFSClient {
         }
     }
 
-    private void mergePartitionFiles(String partitionPath, DataSourceId dataSourceId, FileSystem fileSystem) throws IOException {
+    /**
+     * Merge small .avro files within given HDFS path
+     * @param partitionPath: HDFS path where .avro files stand
+     * @param dataSourceId: dataSourceId
+     * @param fileSystem: fileSystem instance
+     * @throws Exception if anything goes wrong
+     */
 
-        // Retrieve number of .avro files on given partitionPath
+    private void mergeFiles(String partitionPath, DataSourceId dataSourceId, FileSystem fileSystem) throws Exception {
+
+        // Retrieve number of .avro files on given partitionPath smaller than maxFileSizeMb
         Path partitionPathP = new Path(partitionPath);
-        List<FileStatus> avroFileStatuses = Arrays.stream(fileSystem.listStatus(partitionPathP))
-                .filter(x -> x.getPath().getName().endsWith(".avro"))
-                .collect(Collectors.toList());
-        int numberOfAvroFiles = avroFileStatuses.size();
+        List<FileStatus> smallAvroFiles = filter(fileSystem.listStatus(partitionPathP),
+                x -> x.getPath().getName().endsWith(".avro") & fileSizeMb(x) < maxFileSizeMb);
 
-        // If more than the maximum number of partition files
-        if (numberOfAvroFiles > maxFiles) {
+        int numberOfFilesToMerge = smallAvroFiles.size();
+        if (numberOfFilesToMerge >= maxSmallFilesNumber) {
 
-            /*
-             * Merge .avro files
-             * Use FileUtil.copyMerge(..., ..., ..., ..., deleteSource = false, ..., ...) in order to
-             * merge multiple .avro files into a single .avro file on same partitionPath, mantaining input partitionPath.
-             * This forces us to manually delete original .avro files right afterwards merging operation
+            List<String> pathsOfAvroFilesToMerge = map(smallAvroFiles, x -> x.getPath().toString());
+            String mergedFileName = String.format("%s_merged_%s.avro", dataSourceId.name().toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
+            String mergedFilePath = joinPaths(fsUri, partitionPath, mergedFileName);
+            pathsOfAvroFilesToMerge.add(mergedFilePath);
+            log.info("Merging {} .avro files into .avro file {}", numberOfFilesToMerge, mergedFilePath);
+
+            /* Return codes of ConcatTool operation
+            * 0 for success
+            * 1 if the schemas of the input files differ
+            * 2 if the non-reserved input metadata differs
+            * 3 if the input files are encoded with more than one codec.
              */
 
-            String mergedFileName = String.format("%s_merged_%s.avro", dataSourceId.name().toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
-            Path mergedFilePath = new Path(joinPaths(partitionPath, mergedFileName));
-            log.info("Found {} .avro files within partition {}. Merging into file {}", numberOfAvroFiles, partitionPath, mergedFileName);
-            FileUtil.copyMerge(fileSystem, partitionPathP, fileSystem, mergedFilePath, false, fileSystem.getConf(), null);
-            String mergedFileSizeMB = String.format("%.3f", fileSystem.getFileStatus(mergedFilePath).getLen() / 1000000d);
-            log.info("Merged {} .avro files from partition {} into file {} (size {} MB)", numberOfAvroFiles, partitionPath, mergedFileName,
-                    mergedFileSizeMB);
+            int returnCode = new ConcatTool().run(System.in, System.out, System.err, pathsOfAvroFilesToMerge);
+            if (returnCode == 0) {
+                String mergedFileSizeMb = String.format("%.3f", fileSizeMb(fileSystem.getFileStatus(new Path(mergedFilePath))));
+                log.info("Successfully merged {} .avro files into file {} (size {} MB)", numberOfFilesToMerge, mergedFilePath, mergedFileSizeMb);
+            } else {
 
-            // Manually delete .avro files
-            List<Path> pathsToDelete = avroFileStatuses.stream()
-                    .map(FileStatus::getPath)
-                    .collect(Collectors.toList());
-            for (Path pathToDelete: pathsToDelete) {
+                String errorRationale;
+                switch (returnCode) {
+                    case 1: errorRationale = "Schema of input files differ"; break;
+                    case 2: errorRationale = "Non-reserved input metadata differs"; break;
+                    case 3: errorRationale = "Input files are encoded with more than one codec"; break;
+                    default: errorRationale = "Unknown"; break;
+                }
+
+                log.error("Got an error return code from .avro files merging operation. Return code {} (rationale: {})",
+                        returnCode, errorRationale);
+            }
+
+            // Manually delete original .avro files (now being merged)
+            List<Path> avroFilesToDelete = map(smallAvroFiles, FileStatus::getPath);
+            for (Path pathToDelete: avroFilesToDelete) {
                 fileSystem.delete(pathToDelete, true);
             }
         } else {
-            log.info("Detected {} files within partition {}. Maximum is {}, not merging them", numberOfAvroFiles, partitionPath, maxFiles);
+            log.info("Found not enough .avro files to merge");
         }
     }
 }

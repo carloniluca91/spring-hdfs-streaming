@@ -14,10 +14,6 @@
     <version>0.1.0</version>
     <description>Templates of data to be ingested</description>
 
-    <properties>
-        <avro.version>1.8.2</avro.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -47,8 +43,14 @@
         <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
         <dependency>
             <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
+            <artifactId>avro-tools</artifactId>
             <version>${avro.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
