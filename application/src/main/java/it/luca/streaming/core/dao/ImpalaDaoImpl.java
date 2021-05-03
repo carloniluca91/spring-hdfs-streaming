@@ -50,9 +50,14 @@ public class ImpalaDaoImpl {
 
     public void saveIngestionLogRecord(DataSourceId dataSourceId, Exception exception) {
 
-        IngestionLogRecord ingestionLogRecord = new IngestionLogRecord(dataSourceId, exception);
-        impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).save(ingestionLogRecord));
-        log.info("Saved instance of {}", IngestionLogRecord.class.getSimpleName());
+        String className = IngestionLogRecord.class.getSimpleName();
+        try {
+            IngestionLogRecord ingestionLogRecord = new IngestionLogRecord(dataSourceId, exception);
+            impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).save(ingestionLogRecord));
+            log.info("Saved instance of {}", className);
+        } catch (Exception e) {
+            log.error("Caught exception while saving instance of {}. Stack trace: ", className, e);
+        }
     }
 
     private void createDb() {

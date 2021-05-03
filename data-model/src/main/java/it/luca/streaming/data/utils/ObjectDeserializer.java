@@ -19,6 +19,16 @@ public class ObjectDeserializer {
     private final static ObjectMapper xmlMapper = new XmlMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+    /**
+     * Deserializes given XML|JSON string to an instance of T
+     * @param inputStream: .xml|.json file
+     * @param valueType: class of T
+     * @param dataSourceType: dataSourceType
+     * @param <T>: type of deserialized data
+     * @return instance of T
+     * @throws JsonProcessingException if deserialization fails
+     */
+
     public static <T> T readValue(InputStream inputStream, Class<T> valueType, DataSourceType dataSourceType) throws IOException {
 
         String className = valueType.getSimpleName();
@@ -30,6 +40,16 @@ public class ObjectDeserializer {
         log.info("Deserialized input {} content as instance of {}", dataSourceType, className);
         return payload;
     }
+
+    /**
+     * Deserializes given string to an instance of T
+     * @param content: [XML | JSON] string
+     * @param valueType: class of T
+     * @param dataSourceType: dataSourceType [XML | JSON]
+     * @param <T>: type of deserialized data
+     * @return instance of T
+     * @throws JsonProcessingException if deserialization fails
+     */
 
     public static <T> T readValue(String content, Class<T> valueType, DataSourceType dataSourceType) throws JsonProcessingException {
 

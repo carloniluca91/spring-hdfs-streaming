@@ -66,57 +66,51 @@ public class HDFSClient {
     }
 
     /**
-     * Convert input data into some Avro records and store them on HDFS
-     * @param payload: input data (deserialized)
-     * @param sourceSpecification: source's specification
-     * @param <T>: type of input data
-     * @param <A>: type of Avro records
-     * @param <P>: type of source's partition values
+     * Write given batch of .avro records on given partition on HDFS
+     * @param avroRecords: .avro records batch
+     * @param partitionValue: partition value
+     * @param sourceSpecification: sourceSpecification
+     * @param <A>: .avro record type (must extend SpecificRecord)
+     * @param <P>: partition value type
+     * @throws Exception if writing operation fails
      */
 
-    public <T, A extends SpecificRecord, P> void write(T payload, SourceSpecification<T, A, P> sourceSpecification) throws Exception {
+    public <A extends SpecificRecord, P> void write(List<A> avroRecords, P partitionValue, SourceSpecification<?, A, P> sourceSpecification)
+            throws Exception {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
-        List<P> partitionValues = sourceSpecification.getPartitionValues(payload);
-        log.info("{} - Found {} partition value(s) within current batch: ({})",
-                dataSourceId, partitionValues.size(), mkString("|", partitionValues));
-
         userGroupInformation.doAs((PrivilegedExceptionAction<Void>) () -> {
 
             String tablePath = joinPaths(landingPath, sourceSpecification.getTableName());
-            createPathIfNotExists(fileSystem, tablePath);
-            for (P partitionValue: partitionValues) {
+            createPathIfNotExists(tablePath);
 
-                // Create table's partition path and write Avro record(s) belonging to such partition
-                DataFileWriter<A> dataFileWriter = new DataFileWriter<>(new SpecificDatumWriter<>(sourceSpecification.getAvroRecordClass()));
-                String partitionPath = joinPaths(tablePath, String.format("%s=%s", sourceSpecification.getPartitionColumnName(), partitionValue));
-                createPathIfNotExists(fileSystem, partitionPath);
-                String fileName = String.format("%s_%s.avro", dataSourceId.name().toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
-                Path avroFilePath = new Path(joinPaths(partitionPath, fileName));
+            // Create table's partition path
+            DataFileWriter<A> dataFileWriter = new DataFileWriter<>(new SpecificDatumWriter<>(sourceSpecification.getAvroRecordClass()));
+            String partitionPath = joinPaths(tablePath, String.format("%s=%s", sourceSpecification.getPartitionColumnName(), partitionValue));
+            createPathIfNotExists(partitionPath);
 
-                // Retrieve Avro record(s) for such partition
-                List<A> avroRecords = sourceSpecification.getAvroRecordsForPartition(payload, partitionValue);
-                log.info("{} - Saving {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionPath);
-                dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(avroFilePath, false));
-                for (A avroRecord: avroRecords) {
-                    dataFileWriter.append(avroRecord);
-                }
-                log.info("{} - Saved all of {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionPath);
-                dataFileWriter.close();
-                mergeFiles(partitionPath, dataSourceId, fileSystem);
+            // Write Avro record(s) belonging to such partition
+            log.info("{} - Saving {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionPath);
+            String fileName = String.format("%s_%s.avro", dataSourceId.name().toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
+            Path avroFilePath = new Path(joinPaths(partitionPath, fileName));
+            dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(avroFilePath, false));
+            for (A avroRecord: avroRecords) {
+                dataFileWriter.append(avroRecord);
             }
+            log.info("{} - Saved all of {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionPath);
+            dataFileWriter.close();
+            mergeFiles(partitionPath, dataSourceId, fileSystem);
             return null;
         });
     }
 
     /**
      * Create path on HDFS with given permissions if it does not exist yet
-     * @param fileSystem: instance of FileSystem
      * @param pathString: path to be created
      * @throws IOException if operation fails
      */
 
-    private void createPathIfNotExists(FileSystem fileSystem, String pathString) throws IOException {
+    private void createPathIfNotExists(String pathString) throws IOException {
 
         Path path = new Path(pathString);
         if (!fileSystem.exists(path)) {

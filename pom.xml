@@ -53,7 +53,7 @@
 		<impala.driver.version>2.6.15</impala.driver.version>
 		<jdbi.version>3.16.0</jdbi.version>
 
-		<impala.dbName>${application.name}</impala.dbName>
+		<impala.db.name>${application.name}</impala.db.name>
 		<impala.log.tableName>t_ingestion_log</impala.log.tableName>
 	</properties>
 

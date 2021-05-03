@@ -11,6 +11,6 @@ hdfs:
 impala:
   url: jdbc:impala://quickstart.cloudera:21050
   driver: com.cloudera.impala.jdbc.Driver
-  db: @impala.dbName@
+  db: @impala.db.name@
   table:
     ingestionLog: @impala.log.tableName@
