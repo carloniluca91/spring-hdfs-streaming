@@ -7,8 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UtilsTest {
 
@@ -27,6 +26,13 @@ class UtilsTest {
         final LocalDateTime firstLocalDatetime = LocalDateTime.of(2021, 1, 1, 5, 50, 0);
         consumer.accept(firstLocalDatetime, firstLocalDatetime.minusDays(1));
         consumer.accept(firstLocalDatetime.plusMinutes(20), firstLocalDatetime);
+    }
+
+    @Test
+    void isPresent() {
+
+        assertTrue(Utils.isPresent(INPUT));
+        assertFalse(Utils.isPresent((String) null));
     }
 
     @Test

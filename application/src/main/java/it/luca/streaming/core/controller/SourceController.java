@@ -22,7 +22,7 @@ public class SourceController {
 
     /**
      * Receive and store data for dataSource BANCLL01
-     * @param string: input data
+     * @param string input data
      * @return ResponseEntity with small ingestion operation report
      */
 

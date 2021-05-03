@@ -20,11 +20,11 @@ public class ObjectDeserializer {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     /**
-     * Deserializes given XML|JSON string to an instance of T
-     * @param inputStream: .xml|.json file
-     * @param valueType: class of T
-     * @param dataSourceType: dataSourceType
-     * @param <T>: type of deserialized data
+     * Deserializes given inputStream to an instance of T
+     * @param inputStream [.xml | .json] file inputStream
+     * @param valueType class of T
+     * @param dataSourceType dataSourceType
+     * @param <T> type of deserialized data
      * @return instance of T
      * @throws JsonProcessingException if deserialization fails
      */
@@ -43,10 +43,10 @@ public class ObjectDeserializer {
 
     /**
      * Deserializes given string to an instance of T
-     * @param content: [XML | JSON] string
-     * @param valueType: class of T
-     * @param dataSourceType: dataSourceType [XML | JSON]
-     * @param <T>: type of deserialized data
+     * @param content [XML | JSON] string
+     * @param valueType class of T
+     * @param dataSourceType dataSourceType [XML | JSON]
+     * @param <T> type of deserialized data
      * @return instance of T
      * @throws JsonProcessingException if deserialization fails
      */

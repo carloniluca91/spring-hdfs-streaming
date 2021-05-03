@@ -32,6 +32,11 @@ public class Utils {
                 localDateTime.format(dateTimeFormatter);
     }
 
+    public static <T> boolean isPresent(T input) {
+
+        return Optional.ofNullable(input).isPresent();
+    }
+
     public static <T, R> List<R> map(List<T> tList, Function<T, R> function) {
 
         return tList.stream()

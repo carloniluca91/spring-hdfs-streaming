@@ -43,10 +43,10 @@ public class WebdispSpecification extends SourceSpecification<WebdispWrapper, We
     }
 
     @Override
-    public List<String> getPartitionValues(WebdispWrapper input) {
+    protected List<String> getPartitionValues(WebdispWrapper input) {
 
         return input.getNomine().stream()
                 .map(x -> gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA))
-                .distinct().collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 }

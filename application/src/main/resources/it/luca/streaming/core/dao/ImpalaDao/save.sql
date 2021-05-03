@@ -4,8 +4,13 @@ VALUES (
 :record.getIngestionDt,
 :record.getDataSourceId,
 :record.getDataSourceType,
+:record.getInputDataClass,
+:record.getAvroRecordClass,
+:record.getPartitionColumn,
+:record.getPartitionValue,
+:record.getPartitionRecordCount,
 :record.getIngestionOperationCode,
 :record.getIngestionOperationExceptionClass,
 :record.getIngestionOperationExceptionMessage,
-now(),
-from_timestamp(now(), 'yyyy-MM-dd'))
+:record.getInsertTs,
+:record.getInsertDt)

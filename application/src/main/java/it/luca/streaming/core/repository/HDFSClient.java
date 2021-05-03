@@ -66,47 +66,48 @@ public class HDFSClient {
     }
 
     /**
-     * Write given batch of .avro records on given partition on HDFS
-     * @param avroRecords: .avro records batch
-     * @param partitionValue: partition value
-     * @param sourceSpecification: sourceSpecification
-     * @param <A>: .avro record type (must extend SpecificRecord)
-     * @param <P>: partition value type
+     * Write given batch of Avro records on given partition on HDFS
+     * @param partitionValue partition value
+     * @param avroRecords Avro records batch
+     * @param sourceSpecification sourceSpecification
+     * @param <A> Avro record type (must extend SpecificRecord)
+     * @param <P> partition value type
      * @throws Exception if writing operation fails
      */
 
-    public <A extends SpecificRecord, P> void write(List<A> avroRecords, P partitionValue, SourceSpecification<?, A, P> sourceSpecification)
+    public <A extends SpecificRecord, P> void write(P partitionValue, List<A> avroRecords, SourceSpecification<?, A, P> sourceSpecification)
             throws Exception {
 
         DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
         userGroupInformation.doAs((PrivilegedExceptionAction<Void>) () -> {
 
-            String tablePath = joinPaths(landingPath, sourceSpecification.getTableName());
-            createPathIfNotExists(tablePath);
+            String tableHDFSPath = joinPaths(landingPath, sourceSpecification.getTableName());
+            createPathIfNotExists(tableHDFSPath);
 
             // Create table's partition path
             DataFileWriter<A> dataFileWriter = new DataFileWriter<>(new SpecificDatumWriter<>(sourceSpecification.getAvroRecordClass()));
-            String partitionPath = joinPaths(tablePath, String.format("%s=%s", sourceSpecification.getPartitionColumnName(), partitionValue));
-            createPathIfNotExists(partitionPath);
+            String partitionClause = String.format("%s=%s", sourceSpecification.getPartitionColumnName(), partitionValue);
+            String partitionHDFSPath = joinPaths(tableHDFSPath, partitionClause);
+            createPathIfNotExists(partitionHDFSPath);
 
-            // Write Avro record(s) belonging to such partition
-            log.info("{} - Saving {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionPath);
+            // Write Avro records
+            log.info("{} - Saving {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionClause);
             String fileName = String.format("%s_%s.avro", dataSourceId.name().toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
-            Path avroFilePath = new Path(joinPaths(partitionPath, fileName));
-            dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(avroFilePath, false));
+            Path avroFileHDFSPath = new Path(joinPaths(partitionHDFSPath, fileName));
+            dataFileWriter.create(avroRecords.get(0).getSchema(), fileSystem.create(avroFileHDFSPath, false));
             for (A avroRecord: avroRecords) {
                 dataFileWriter.append(avroRecord);
             }
-            log.info("{} - Saved all of {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionPath);
+            log.info("{} - Saved all of {} Avro record(s) on partition {}", dataSourceId, avroRecords.size(), partitionClause);
             dataFileWriter.close();
-            mergeFiles(partitionPath, dataSourceId, fileSystem);
+            mergeFiles(partitionHDFSPath, dataSourceId);
             return null;
         });
     }
 
     /**
      * Create path on HDFS with given permissions if it does not exist yet
-     * @param pathString: path to be created
+     * @param pathString path to be created
      * @throws IOException if operation fails
      */
 
@@ -123,28 +124,28 @@ public class HDFSClient {
     }
 
     /**
-     * Merge small .avro files within given HDFS path
-     * @param partitionPath: HDFS path where .avro files stand
-     * @param dataSourceId: dataSourceId
-     * @param fileSystem: fileSystem instance
+     * Merge small Avro files within given HDFS path
+     * @param partitionPath HDFS path where Avro files stand
+     * @param dataSourceId dataSourceId
      * @throws Exception if anything goes wrong
      */
 
-    private void mergeFiles(String partitionPath, DataSourceId dataSourceId, FileSystem fileSystem) throws Exception {
+    private void mergeFiles(String partitionPath, DataSourceId dataSourceId) throws Exception {
 
         // Retrieve number of .avro files on given partitionPath smaller than maxFileSizeMb
-        Path partitionPathP = new Path(partitionPath);
-        List<FileStatus> smallAvroFiles = filter(fileSystem.listStatus(partitionPathP),
+        String dataSourceName = dataSourceId.name();
+        Path partitionHDFSPath = new Path(partitionPath);
+        List<FileStatus> smallAvroFiles = filter(fileSystem.listStatus(partitionHDFSPath),
                 x -> x.getPath().getName().endsWith(".avro") & fileSizeMb(x) < maxFileSizeMb);
 
         int numberOfFilesToMerge = smallAvroFiles.size();
         if (numberOfFilesToMerge >= maxSmallFilesNumber) {
 
             List<String> pathsOfAvroFilesToMerge = map(smallAvroFiles, x -> x.getPath().toString());
-            String mergedFileName = String.format("%s_merged_%s.avro", dataSourceId.name().toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
-            String mergedFilePath = joinPaths(fsUri, partitionPath, mergedFileName);
-            pathsOfAvroFilesToMerge.add(mergedFilePath);
-            log.info("Merging {} .avro files into .avro file {}", numberOfFilesToMerge, mergedFilePath);
+            String mergedFileName = String.format("%s_merged_%s.avro", dataSourceName.toLowerCase(), now(DatePattern.AVRO_FILE_TIMESTAMP));
+            String mergedFileHDFSPath = joinPaths(fsUri, partitionPath, mergedFileName);
+            pathsOfAvroFilesToMerge.add(mergedFileHDFSPath);
+            log.info("{} - Merging {} .avro files into .avro file {}", dataSourceName, numberOfFilesToMerge, mergedFileHDFSPath);
 
             /* Return codes of ConcatTool operation
             * 0 for success
@@ -155,8 +156,9 @@ public class HDFSClient {
 
             int returnCode = new ConcatTool().run(System.in, System.out, System.err, pathsOfAvroFilesToMerge);
             if (returnCode == 0) {
-                String mergedFileSizeMb = String.format("%.3f", fileSizeMb(fileSystem.getFileStatus(new Path(mergedFilePath))));
-                log.info("Successfully merged {} .avro files into file {} (size {} MB)", numberOfFilesToMerge, mergedFilePath, mergedFileSizeMb);
+                String mergedFileSizeMb = String.format("%.3f", fileSizeMb(fileSystem.getFileStatus(new Path(mergedFileHDFSPath))));
+                log.info("{} - Successfully merged {} .avro files into file {} (size {} MB)",
+                        dataSourceName, numberOfFilesToMerge, mergedFileHDFSPath, mergedFileSizeMb);
             } else {
 
                 String errorRationale;
@@ -167,8 +169,8 @@ public class HDFSClient {
                     default: errorRationale = "Unknown"; break;
                 }
 
-                log.error("Got an error return code from .avro files merging operation. Return code {} (rationale: {})",
-                        returnCode, errorRationale);
+                log.error("{} - Got an error return code from .avro files merging operation. Return code {} (rationale: {})",
+                        dataSourceName, returnCode, errorRationale);
             }
 
             // Manually delete original .avro files (now being merged)
@@ -177,7 +179,7 @@ public class HDFSClient {
                 fileSystem.delete(pathToDelete, true);
             }
         } else {
-            log.info("Found not enough .avro files to merge");
+            log.info("{} - Found not enough .avro files to merge", dataSourceName);
         }
     }
 }
