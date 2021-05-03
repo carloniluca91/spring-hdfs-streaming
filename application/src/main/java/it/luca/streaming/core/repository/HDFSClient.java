@@ -72,7 +72,7 @@ public class HDFSClient {
      * @param sourceSpecification sourceSpecification
      * @param <A> Avro record type (must extend SpecificRecord)
      * @param <P> partition value type
-     * @throws Exception if writing operation fails
+     * @throws Exception if operations fails
      */
 
     public <A extends SpecificRecord, P> void write(P partitionValue, List<A> avroRecords, SourceSpecification<?, A, P> sourceSpecification)

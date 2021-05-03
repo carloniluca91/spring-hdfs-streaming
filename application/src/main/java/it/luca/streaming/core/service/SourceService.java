@@ -66,8 +66,8 @@ public class SourceService {
 
             // For each partition value, write related .avro records
             Map<P, List<A>> partitionRecordsMap = sourceSpecification.getPartitionRecordsMap(payload);
-            BiFunction<Map.Entry<P, List<A>>, Exception, IngestionLogRecord> biFunction = (entry, e) ->
-                    new IngestionLogRecord(sourceSpecification, entry.getKey(), entry.getValue().size(), e);
+            BiFunction<Map.Entry<P, List<A>>, Exception, IngestionLogRecord> biFunction = (entry, excpt) ->
+                    new IngestionLogRecord(sourceSpecification, entry.getKey(), entry.getValue().size(), excpt);
             for (Map.Entry<P, List<A>> entry : partitionRecordsMap.entrySet()) {
 
                 P partitionValue = entry.getKey();
