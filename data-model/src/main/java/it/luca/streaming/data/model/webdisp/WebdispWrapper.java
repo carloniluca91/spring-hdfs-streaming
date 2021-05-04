@@ -10,11 +10,11 @@ import java.util.List;
 public class WebdispWrapper {
 
     private final String dataOraInvio;
-    private final List<Nomina> nomine;
+    private final List<WebdispNomina> nomine;
 
     @JsonCreator
     public WebdispWrapper(@JacksonXmlProperty(localName = "dataOraInvio") String dataOraInvio,
-                          @JacksonXmlProperty(localName = "nomine") List<Nomina> nomine) {
+                          @JacksonXmlProperty(localName = "nomine") List<WebdispNomina> nomine) {
 
         this.dataOraInvio = dataOraInvio;
         this.nomine = nomine;

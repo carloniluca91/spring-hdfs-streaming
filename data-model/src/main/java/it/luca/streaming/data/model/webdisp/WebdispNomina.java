@@ -5,7 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Getter;
 
 @Getter
-public class Nomina {
+public class WebdispNomina {
 
     private final Double pcs;
     private final Double valoreEnergia;
@@ -22,19 +22,19 @@ public class Nomina {
     private final String tipologiaPunto;
 
     @JsonCreator
-    public Nomina(@JacksonXmlProperty(localName = "pcs") Double pcs,
-                  @JacksonXmlProperty(localName = "valoreEnergia") Double valoreEnergia,
-                  @JacksonXmlProperty(localName = "unitaMisuraEnergia") String unitaMisuraEnergia,
-                  @JacksonXmlProperty(localName = "valoreVolume") Double valoreVolume,
-                  @JacksonXmlProperty(localName = "unitaMisuraVolume") String unitaMisuraVolume,
-                  @JacksonXmlProperty(localName = "dataElaborazione") String dataElaborazione,
-                  @JacksonXmlProperty(localName = "dataDecorrenza") String dataDecorrenza,
-                  @JacksonXmlProperty(localName = "codiceRemi") String codiceRemi,
-                  @JacksonXmlProperty(localName = "descrizioneRemi") String descrizioneRemi,
-                  @JacksonXmlProperty(localName = "descrizionePunto") String descrizionePunto,
-                  @JacksonXmlProperty(localName = "tipoNomina") String tipoNomina,
-                  @JacksonXmlProperty(localName = "cicloNomina") String cicloNomina,
-                  @JacksonXmlProperty(localName = "tipologiaPunto") String tipologiaPunto) {
+    public WebdispNomina(@JacksonXmlProperty(localName = "pcs") Double pcs,
+                         @JacksonXmlProperty(localName = "valoreEnergia") Double valoreEnergia,
+                         @JacksonXmlProperty(localName = "unitaMisuraEnergia") String unitaMisuraEnergia,
+                         @JacksonXmlProperty(localName = "valoreVolume") Double valoreVolume,
+                         @JacksonXmlProperty(localName = "unitaMisuraVolume") String unitaMisuraVolume,
+                         @JacksonXmlProperty(localName = "dataElaborazione") String dataElaborazione,
+                         @JacksonXmlProperty(localName = "dataDecorrenza") String dataDecorrenza,
+                         @JacksonXmlProperty(localName = "codiceRemi") String codiceRemi,
+                         @JacksonXmlProperty(localName = "descrizioneRemi") String descrizioneRemi,
+                         @JacksonXmlProperty(localName = "descrizionePunto") String descrizionePunto,
+                         @JacksonXmlProperty(localName = "tipoNomina") String tipoNomina,
+                         @JacksonXmlProperty(localName = "cicloNomina") String cicloNomina,
+                         @JacksonXmlProperty(localName = "tipologiaPunto") String tipologiaPunto) {
 
         this.pcs = pcs;
         this.valoreEnergia = valoreEnergia;

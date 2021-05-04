@@ -2,6 +2,7 @@ package it.luca.streaming.core.controller;
 
 import it.luca.streaming.core.model.ControllerResponse;
 import it.luca.streaming.core.service.SourceService;
+import it.luca.streaming.data.model.jarvis.JarvisSpecification;
 import it.luca.streaming.data.model.webdisp.WebdispSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class SourceController {
     private SourceService sourceService;
 
     /**
-     * Receive and store data for dataSource BANCLL01
+     * Receive and store data for dataSource Webdisp
      * @param string input data
      * @return ResponseEntity with small ingestion operation report
      */
@@ -31,5 +32,18 @@ public class SourceController {
 
         WebdispSpecification webdispSpecification = new WebdispSpecification();
         return new ResponseEntity<>(sourceService.store(string, webdispSpecification), HttpStatus.OK);
+    }
+
+    /**
+     * Receive and store data for dataSource Jarvis
+     * @param string input data
+     * @return ResponseEntity with small ingestion operation report
+     */
+
+    @PostMapping("/jarvis")
+    public ResponseEntity<ControllerResponse> jarvis(@RequestBody String string) {
+
+        JarvisSpecification jarvisSpecification = new JarvisSpecification();
+        return new ResponseEntity<>(sourceService.store(string, jarvisSpecification), HttpStatus.OK);
     }
 }
