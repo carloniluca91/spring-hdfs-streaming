@@ -1,5 +1,6 @@
 package it.luca.streaming.data.utils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -10,6 +11,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Utils {
+
+    public static String changeDatePattern(String date, String inputPattern, String outputPattern) {
+
+        return LocalDate.parse(date, DateTimeFormatter.ofPattern(inputPattern))
+                .format(DateTimeFormatter.ofPattern(outputPattern));
+    }
 
     public static <T> List<T> filter(T[] tArray, Predicate<T> predicate) {
 
