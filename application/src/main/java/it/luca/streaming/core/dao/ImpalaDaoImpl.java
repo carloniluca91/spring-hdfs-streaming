@@ -2,17 +2,23 @@ package it.luca.streaming.core.dao;
 
 import com.cloudera.impala.jdbc.DataSource;
 import it.luca.streaming.core.model.IngestionLogRecord;
+import it.luca.streaming.data.utils.DatePattern;
 import lombok.extern.slf4j.Slf4j;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+import static it.luca.streaming.data.utils.Utils.now;
+
 @Slf4j
 @Component
+@EnableScheduling
 public class ImpalaDaoImpl {
 
     @Value("${impala.url}")
@@ -41,6 +47,11 @@ public class ImpalaDaoImpl {
         createDb();
         createTable();
     }
+
+    /**
+     * Insert given batch of IngestionLogRecords
+     * @param ingestionLogRecords records to save
+     */
 
     public void insertLogRecords(List<IngestionLogRecord> ingestionLogRecords) {
 
@@ -82,5 +93,18 @@ public class ImpalaDaoImpl {
                 log.info("Created table {}", fqTableName);
             }
         });
+    }
+
+    /**
+     * Reduces the number of files in logTable's today partition every 30 minutes
+     */
+
+    @Scheduled(initialDelay = 120000, fixedRate = 1800000)
+    private void insertOverwriteToday() {
+
+        String today = now(DatePattern.DEFAULT_DATE);
+        log.info("Reducing number of files on {}, partition = {} with INSERT OVERWRITE", ingestionTable, today);
+        impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).insertOverwrite(today));
+        log.info("Reduced number of files on {}, partition = {} with INSERT OVERWRITE", ingestionTable, today);
     }
 }

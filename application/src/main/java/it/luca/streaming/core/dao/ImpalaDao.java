@@ -1,6 +1,7 @@
 package it.luca.streaming.core.dao;
 
 import it.luca.streaming.core.model.IngestionLogRecord;
+import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindMethods;
 import org.jdbi.v3.sqlobject.locator.UseClasspathSqlLocator;
 import org.jdbi.v3.sqlobject.statement.SqlBatch;
@@ -17,6 +18,9 @@ public interface ImpalaDao {
 
     @SqlUpdate
     void createTable();
+
+    @SqlUpdate
+    void insertOverwrite(@Bind("today") String today);
 
     @SqlBatch
     void save(@BindMethods("record") List<IngestionLogRecord> ingestionLogRecords);
