@@ -1,1 +1,1 @@
-CREATE DATABASE IF NOT EXISTS @impala.dbName@
+CREATE DATABASE IF NOT EXISTS @impala.db.name@

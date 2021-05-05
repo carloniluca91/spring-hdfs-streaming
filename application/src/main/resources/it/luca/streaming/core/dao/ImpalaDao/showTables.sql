@@ -1,1 +1,1 @@
-SHOW TABLES IN @impala.dbName@
+SHOW TABLES IN @impala.db.name@
