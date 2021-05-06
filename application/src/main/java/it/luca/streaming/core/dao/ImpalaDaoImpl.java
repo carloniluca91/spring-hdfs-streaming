@@ -96,10 +96,10 @@ public class ImpalaDaoImpl {
     }
 
     /**
-     * Reduces the number of files in logTable's today partition every 30 minutes
+     * Reduces the number of files in logTable's today partition at every 59-th minute
      */
 
-    @Scheduled(initialDelay = 120000, fixedRate = 1800000)
+    @Scheduled(cron = "30 59 * * * *")
     private void insertOverwriteToday() {
 
         String today = now(DatePattern.DEFAULT_DATE);
