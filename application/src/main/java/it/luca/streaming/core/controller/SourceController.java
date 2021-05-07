@@ -2,6 +2,7 @@ package it.luca.streaming.core.controller;
 
 import it.luca.streaming.core.model.ControllerResponse;
 import it.luca.streaming.core.service.SourceService;
+import it.luca.streaming.data.model.int002.Int002Specification;
 import it.luca.streaming.data.model.jarvis.JarvisSpecification;
 import it.luca.streaming.data.model.webdisp.WebdispSpecification;
 import lombok.extern.slf4j.Slf4j;
@@ -45,5 +46,18 @@ public class SourceController {
 
         JarvisSpecification jarvisSpecification = new JarvisSpecification();
         return new ResponseEntity<>(sourceService.store(string, jarvisSpecification), HttpStatus.OK);
+    }
+
+    /**
+     * Receive and store data for dataSource Int002
+     * @param string input data
+     * @return ResponseEntity with small ingestion operation report
+     */
+
+    @PostMapping("/int002")
+    public ResponseEntity<ControllerResponse> int002(@RequestBody String string) {
+
+        Int002Specification int002Specification = new Int002Specification();
+        return new ResponseEntity<>(sourceService.store(string, int002Specification), HttpStatus.OK);
     }
 }

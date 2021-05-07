@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum DataSourceId {
 
+    INT002(DataSourceType.JSON),
     JARVIS(DataSourceType.XML),
     WEBDISP(DataSourceType.XML);
 
