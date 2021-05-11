@@ -5,12 +5,14 @@ import it.luca.streaming.data.model.common.SourceSpecification;
 import it.luca.streaming.data.utils.DatePattern;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static it.luca.streaming.data.utils.Utils.gasDay;
-import static it.luca.streaming.data.utils.Utils.now;
+import static it.luca.streaming.data.utils.Utils.*;
 
 public class WebdispSpecification extends SourceSpecification<WebdispWrapper, WebdispAvro, String> {
+
+    private final Function<WebdispNomina, String> gasDay = x -> gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA);
 
     public WebdispSpecification() {
         super(DataSourceId.WEBDISP, "giorno_gas", WebdispWrapper.class, WebdispAvro.class);
@@ -20,7 +22,7 @@ public class WebdispSpecification extends SourceSpecification<WebdispWrapper, We
     public List<WebdispAvro> getAvroRecordsForPartition(WebdispWrapper input, String partitionValue) {
 
         return input.getNomine().stream()
-                .filter(x -> gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA).equals(partitionValue))
+                .filter(x -> gasDay.apply(x).equals(partitionValue))
                 .map(x -> WebdispAvro.newBuilder()
                         .setDataOraInvio(input.getDataOraInvio())
                         .setPcs(x.getPcs())
@@ -45,8 +47,6 @@ public class WebdispSpecification extends SourceSpecification<WebdispWrapper, We
     @Override
     protected List<String> getPartitionValues(WebdispWrapper input) {
 
-        return input.getNomine().stream()
-                .map(x -> gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA))
-                .collect(Collectors.toList());
+        return map(input.getNomine(), gasDay);
     }
 }

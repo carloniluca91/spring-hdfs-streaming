@@ -3,11 +3,13 @@ package it.luca.streaming.data.model.jarvis;
 import it.luca.streaming.data.enumeration.DataSourceId;
 import it.luca.streaming.data.model.common.SourceSpecification;
 import it.luca.streaming.data.utils.DatePattern;
-import it.luca.streaming.data.utils.Utils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static it.luca.streaming.data.utils.Utils.changeDatePattern;
+import static it.luca.streaming.data.utils.Utils.now;
 
 public class JarvisSpecification extends SourceSpecification<JarvisWrapper, JarvisAvro, String> {
 
@@ -33,8 +35,8 @@ public class JarvisSpecification extends SourceSpecification<JarvisWrapper, Jarv
                         .setUnitaDiMisuraEnergiaLimiteMinimo(x.getUnitaDiMisuraEnergiaLimiteMinimo())
                         .setLimiteMassimoEnergia(x.getLimiteMassimoEnergia())
                         .setUnitaDiMisuraEnergiaLimiteMassimo(x.getUnitaDiMisuraEnergiaLimiteMassimo())
-                        .setTsInserimento(Utils.now(DatePattern.DEFAULT_TIMESTAMP))
-                        .setDtInserimento(Utils.now(DatePattern.DEFAULT_DATE))
+                        .setTsInserimento(now(DatePattern.DEFAULT_TIMESTAMP))
+                        .setDtInserimento(now(DatePattern.DEFAULT_DATE))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -42,7 +44,7 @@ public class JarvisSpecification extends SourceSpecification<JarvisWrapper, Jarv
     @Override
     protected List<String> getPartitionValues(JarvisWrapper input) {
 
-        String giornoGas = Utils.changeDatePattern(input.getGiornoGas(), DatePattern.JARVIS_GIORNO_GAS, DatePattern.DEFAULT_DATE);
+        String giornoGas = changeDatePattern(input.getGiornoGas(), DatePattern.JARVIS_GIORNO_GAS, DatePattern.DEFAULT_DATE);
         return Collections.singletonList(giornoGas);
     }
 }

@@ -23,26 +23,6 @@ class ObjectDeserializerTest {
     }
 
     @Test
-    void webdisp() throws IOException {
-
-        WebdispWrapper webdispWrapper = readValue(inputStream("webdisp.xml"), WebdispWrapper.class, DataSourceType.XML);
-        assertNotNull(webdispWrapper);
-        assertNotNull(webdispWrapper.getDataOraInvio());
-        assertNotNull(webdispWrapper.getNomine());
-        assertFalse(webdispWrapper.getNomine().isEmpty());
-    }
-
-    @Test
-    void jarvis() throws IOException {
-
-        JarvisWrapper jarvisWrapper = readValue(inputStream("jarvis.xml"), JarvisWrapper.class, DataSourceType.XML);
-        assertNotNull(jarvisWrapper);
-        assertNotNull(jarvisWrapper.getGiornoGas());
-        assertNotNull(jarvisWrapper.getListaCicli());
-        assertFalse(jarvisWrapper.getListaCicli().isEmpty());
-    }
-
-    @Test
     void int002() throws IOException {
 
         Int002Wrapper int002Wrapper = readValue(inputStream("int002.json"), Int002Wrapper.class, DataSourceType.JSON);

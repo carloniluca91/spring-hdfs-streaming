@@ -43,7 +43,7 @@ public abstract class SourceSpecification<T, A extends SpecificRecord, P> {
         return map;
     }
 
-    protected List<P> getDistinctPartitionValues(T input) {
+    public List<P> getDistinctPartitionValues(T input) {
 
         return getPartitionValues(input).stream()
                 .distinct()
