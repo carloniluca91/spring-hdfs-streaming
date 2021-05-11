@@ -35,7 +35,7 @@ public class IngestionLogRecord {
     public <P> IngestionLogRecord(SourceSpecification<?, ?, P> sourceSpecification, P partitionValue, Integer partitionRecordCount, Exception exception) {
 
         this.dataSourceId = sourceSpecification.getDataSourceId().name();
-        this.dataSourceType = sourceSpecification.getDataSourceId().getDataSourceType().name();
+        this.dataSourceType = sourceSpecification.getDataSourceType().name();
         inputDataClass = sourceSpecification.getInputDataClass().getName();
         avroRecordClass = sourceSpecification.getAvroRecordClass().getName();
         partitionColumn = sourceSpecification.getPartitionColumnName();

@@ -1,6 +1,7 @@
 package it.luca.streaming.data.model.webdisp;
 
 import it.luca.streaming.data.enumeration.DataSourceId;
+import it.luca.streaming.data.enumeration.DataSourceType;
 import it.luca.streaming.data.model.common.SourceSpecification;
 import it.luca.streaming.data.utils.DatePattern;
 
@@ -12,10 +13,11 @@ import static it.luca.streaming.data.utils.Utils.*;
 
 public class WebdispSpecification extends SourceSpecification<WebdispWrapper, WebdispAvro, String> {
 
-    private final Function<WebdispNomina, String> gasDay = x -> gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA);
+    private final Function<WebdispNomina, String> gasDay = x ->
+            gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA);
 
     public WebdispSpecification() {
-        super(DataSourceId.WEBDISP, "giorno_gas", WebdispWrapper.class, WebdispAvro.class);
+        super(DataSourceId.WEBDISP, DataSourceType.XML, "giorno_gas", WebdispWrapper.class, WebdispAvro.class);
     }
 
     @Override

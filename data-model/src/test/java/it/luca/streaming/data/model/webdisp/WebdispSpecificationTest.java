@@ -1,6 +1,5 @@
 package it.luca.streaming.data.model.webdisp;
 
-import it.luca.streaming.data.enumeration.DataSourceId;
 import it.luca.streaming.data.model.common.SourceSpecificationTest;
 import it.luca.streaming.data.utils.DatePattern;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ class WebdispSpecificationTest extends SourceSpecificationTest<WebdispWrapper, W
             gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA);
 
     public WebdispSpecificationTest() throws IOException {
-        super("webdisp.xml", WebdispWrapper.class, DataSourceId.WEBDISP, new WebdispSpecification());
+        super("webdisp.xml", new WebdispSpecification());
     }
 
     @Test

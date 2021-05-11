@@ -1,6 +1,5 @@
 package it.luca.streaming.data.model.int002;
 
-import it.luca.streaming.data.enumeration.DataSourceId;
 import it.luca.streaming.data.model.common.SourceSpecificationTest;
 import it.luca.streaming.data.utils.DatePattern;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ class Int002SpecificationTest extends SourceSpecificationTest<Int002Wrapper, Int
             gasDay(x.getGiornoOraRiferimento(), DatePattern.INT002_GIORNO_ORA_RIFERIMENTO);
 
     public Int002SpecificationTest() throws IOException {
-        super("int002.json", Int002Wrapper.class, DataSourceId.INT002, new Int002Specification());
+        super("int002.json", new Int002Specification());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package it.luca.streaming.data.model.common;
 
-import it.luca.streaming.data.enumeration.DataSourceId;
 import org.apache.avro.specific.SpecificRecord;
 
 import java.io.IOException;
@@ -14,13 +13,13 @@ public abstract class SourceSpecificationTest<T, A extends SpecificRecord, P> {
     protected SourceSpecification<T, A, P> specification;
 
     public SourceSpecificationTest(String fileName,
-                                   Class<T> tClass,
-                                   DataSourceId dataSourceId,
                                    SourceSpecification<T, A, P> specification)
             throws IOException {
 
         String filePath = Paths.get("samples", fileName).toString();
-        instance = readValue(getClass().getClassLoader().getResourceAsStream(filePath), tClass, dataSourceId.getDataSourceType());
+        instance = readValue(getClass().getClassLoader().getResourceAsStream(filePath),
+                specification.getInputDataClass(),
+                specification.getDataSourceType());
         this.specification = specification;
     }
 

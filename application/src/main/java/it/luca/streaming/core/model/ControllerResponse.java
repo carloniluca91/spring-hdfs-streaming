@@ -23,7 +23,7 @@ public class ControllerResponse {
         messageTs = now(DatePattern.DEFAULT_TIMESTAMP);
         messageDt = now(DatePattern.DEFAULT_DATE);
         this.dataSourceId = dataSourceId.name();
-        this.dataSourceType = dataSourceId.getDataSourceType().name();
+        this.dataSourceType = dataSourceId.name();
         ingestionOperationCode = orElse(exception, e -> IngestionOperationCode.KO, IngestionOperationCode.OK);
         ingestionOperationMessage = orElse(exception, Exception::getMessage, "Message received");
     }

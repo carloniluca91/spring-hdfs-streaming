@@ -1,6 +1,7 @@
 package it.luca.streaming.data.model.jarvis;
 
 import it.luca.streaming.data.enumeration.DataSourceId;
+import it.luca.streaming.data.enumeration.DataSourceType;
 import it.luca.streaming.data.model.common.SourceSpecification;
 import it.luca.streaming.data.utils.DatePattern;
 
@@ -14,7 +15,7 @@ import static it.luca.streaming.data.utils.Utils.now;
 public class JarvisSpecification extends SourceSpecification<JarvisWrapper, JarvisAvro, String> {
 
     public JarvisSpecification() {
-        super(DataSourceId.JARVIS, "giorno_gas", JarvisWrapper.class, JarvisAvro.class);
+        super(DataSourceId.JARVIS, DataSourceType.XML, "giorno_gas", JarvisWrapper.class, JarvisAvro.class);
     }
 
     @Override

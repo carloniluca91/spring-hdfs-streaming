@@ -1,6 +1,7 @@
 package it.luca.streaming.data.model.int002;
 
 import it.luca.streaming.data.enumeration.DataSourceId;
+import it.luca.streaming.data.enumeration.DataSourceType;
 import it.luca.streaming.data.model.common.SourceSpecification;
 import it.luca.streaming.data.utils.DatePattern;
 
@@ -16,7 +17,7 @@ public class Int002Specification extends SourceSpecification<Int002Wrapper, Int0
             gasDay(x.getGiornoOraRiferimento(), DatePattern.INT002_GIORNO_ORA_RIFERIMENTO);
 
     public Int002Specification() {
-        super(DataSourceId.INT002, "giorno_gas", Int002Wrapper.class, Int002Avro.class);
+        super(DataSourceId.INT002, DataSourceType.JSON, "giorno_gas", Int002Wrapper.class, Int002Avro.class);
     }
 
     @Override

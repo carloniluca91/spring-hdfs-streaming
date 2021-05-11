@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static it.luca.streaming.data.utils.Utils.map;
 
 public class HDFSUtils {
 
@@ -25,9 +25,7 @@ public class HDFSUtils {
         Function<String, String> cutBeginningSlash = s -> s.startsWith(Path.SEPARATOR) ? s.substring(1) : s;
         Function<String, String> cutFinalSlash = s -> s.endsWith(Path.SEPARATOR) ? s.substring(0, s.length() - 1) : s;
         List<String> allPaths = new ArrayList<>(Collections.singletonList(addBeginningSlash.andThen(cutFinalSlash).apply(path)));
-        allPaths.addAll(Stream.of(paths)
-                .map(cutBeginningSlash.andThen(cutFinalSlash))
-                .collect(Collectors.toList()));
+        allPaths.addAll(map(paths, cutBeginningSlash.andThen(cutFinalSlash)));
         return String.join(Path.SEPARATOR, allPaths);
     }
 

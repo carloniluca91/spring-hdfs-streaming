@@ -1,6 +1,5 @@
 package it.luca.streaming.data.model.jarvis;
 
-import it.luca.streaming.data.enumeration.DataSourceId;
 import it.luca.streaming.data.model.common.SourceSpecificationTest;
 import it.luca.streaming.data.utils.DatePattern;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ class JarvisSpecificationTest extends SourceSpecificationTest<JarvisWrapper, Jar
 
     public JarvisSpecificationTest() throws IOException {
 
-        super("jarvis.xml", JarvisWrapper.class, DataSourceId.JARVIS, new JarvisSpecification());
+        super("jarvis.xml", new JarvisSpecification());
     }
 
     @Override

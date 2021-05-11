@@ -52,7 +52,7 @@ public class SourceService {
         try {
             if (!StringUtils.isBlank(input)) {
                 log.info("{} - Call received. Input data:\n\n{}\n", dataSourceId, input);
-                payload = readValue(input, sourceSpecification.getInputDataClass(), dataSourceId.getDataSourceType());
+                payload = readValue(input, sourceSpecification.getInputDataClass(), sourceSpecification.getDataSourceType());
             } else {
                 throw new EmptyInputException(dataSourceId);
             }
