@@ -18,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WebdispSpecificationTest extends SourceSpecificationTest<WebdispWrapper, WebdispAvro, String> {
 
-    private final Function<WebdispNomina, String> gasDay = x -> gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA);
+    private final Function<WebdispNomina, String> gasDay = x ->
+            gasDay(x.getDataDecorrenza(), DatePattern.WEBDISP_DATA_DECORRENZA);
 
     public WebdispSpecificationTest() throws IOException {
         super("webdisp.xml", WebdispWrapper.class, DataSourceId.WEBDISP, new WebdispSpecification());
@@ -50,10 +51,7 @@ class WebdispSpecificationTest extends SourceSpecificationTest<WebdispWrapper, W
 
         Map<String, List<WebdispAvro>> map = specification.getPartitionRecordsMap(instance);
         assertFalse(map.isEmpty());
-        List<String> stringList = map(instance.getNomine(), gasDay)
-                .stream().distinct().collect(Collectors.toList());
 
-        stringList.forEach(x -> assertTrue(map.containsKey(x)));
         map.forEach(((s, webdispAvros) -> {
 
             List<WebdispNomina> webdispNominas = filter(instance.getNomine(), x -> gasDay.apply(x).equals(s))
@@ -65,6 +63,7 @@ class WebdispSpecificationTest extends SourceSpecificationTest<WebdispWrapper, W
                     .sorted(Comparator.comparingDouble(WebdispAvro::getPcs))
                     .collect(Collectors.toList());
 
+            assertEquals(webdispNominas.size(), sortedAvros.size());
             IntStream.range(0, webdispNominas.size())
                     .forEach(i -> {
 
