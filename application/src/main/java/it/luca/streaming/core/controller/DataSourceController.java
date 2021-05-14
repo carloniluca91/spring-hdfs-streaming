@@ -1,7 +1,7 @@
 package it.luca.streaming.core.controller;
 
-import it.luca.streaming.core.model.ControllerResponse;
-import it.luca.streaming.core.service.SourceService;
+import it.luca.streaming.core.dto.DataSourceResponseDto;
+import it.luca.streaming.core.service.IngestionService;
 import it.luca.streaming.data.model.int002.Int002Specification;
 import it.luca.streaming.data.model.jarvis.JarvisSpecification;
 import it.luca.streaming.data.model.webdisp.WebdispSpecification;
@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/source")
-public class SourceController {
+public class DataSourceController {
 
     @Autowired
-    private SourceService sourceService;
+    private IngestionService service;
 
     /**
      * Receive and store data for dataSource Webdisp
@@ -29,10 +29,10 @@ public class SourceController {
      */
 
     @PostMapping("/webdisp")
-    public ResponseEntity<ControllerResponse> webdisp(@RequestBody String string) {
+    public ResponseEntity<DataSourceResponseDto> webdisp(@RequestBody String string) {
 
         WebdispSpecification webdispSpecification = new WebdispSpecification();
-        return new ResponseEntity<>(sourceService.store(string, webdispSpecification), HttpStatus.OK);
+        return new ResponseEntity<>(service.store(string, webdispSpecification), HttpStatus.OK);
     }
 
     /**
@@ -42,10 +42,10 @@ public class SourceController {
      */
 
     @PostMapping("/jarvis")
-    public ResponseEntity<ControllerResponse> jarvis(@RequestBody String string) {
+    public ResponseEntity<DataSourceResponseDto> jarvis(@RequestBody String string) {
 
         JarvisSpecification jarvisSpecification = new JarvisSpecification();
-        return new ResponseEntity<>(sourceService.store(string, jarvisSpecification), HttpStatus.OK);
+        return new ResponseEntity<>(service.store(string, jarvisSpecification), HttpStatus.OK);
     }
 
     /**
@@ -55,9 +55,9 @@ public class SourceController {
      */
 
     @PostMapping("/int002")
-    public ResponseEntity<ControllerResponse> int002(@RequestBody String string) {
+    public ResponseEntity<DataSourceResponseDto> int002(@RequestBody String string) {
 
         Int002Specification int002Specification = new Int002Specification();
-        return new ResponseEntity<>(sourceService.store(string, int002Specification), HttpStatus.OK);
+        return new ResponseEntity<>(service.store(string, int002Specification), HttpStatus.OK);
     }
 }

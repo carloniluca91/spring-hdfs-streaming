@@ -1,7 +1,7 @@
 package it.luca.streaming.core.dao;
 
 import com.cloudera.impala.jdbc.DataSource;
-import it.luca.streaming.core.model.IngestionLogRecord;
+import it.luca.streaming.core.dto.IngestionLogDto;
 import it.luca.streaming.data.utils.DatePattern;
 import lombok.extern.slf4j.Slf4j;
 import org.jdbi.v3.core.Jdbi;
@@ -50,16 +50,16 @@ public class ImpalaDaoImpl {
 
     /**
      * Insert given batch of IngestionLogRecords
-     * @param ingestionLogRecords records to save
+     * @param ingestionLogDtos records to save
      */
 
-    public void insertLogRecords(List<IngestionLogRecord> ingestionLogRecords) {
+    public void insertLogRecords(List<IngestionLogDto> ingestionLogDtos) {
 
-        String className = IngestionLogRecord.class.getSimpleName();
+        String className = IngestionLogDto.class.getSimpleName();
         try {
-            if (!ingestionLogRecords.isEmpty()) {
-                impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).save(ingestionLogRecords));
-                log.info("Saved {} instance(s) of {}", ingestionLogRecords.size(), className);
+            if (!ingestionLogDtos.isEmpty()) {
+                impalaJdbi.useHandle(handle -> handle.attach(ImpalaDao.class).save(ingestionLogDtos));
+                log.info("Saved {} instance(s) of {}", ingestionLogDtos.size(), className);
             } else {
                 log.warn("Received no {} to insert", className);
             }
@@ -99,7 +99,7 @@ public class ImpalaDaoImpl {
      * Reduces the number of files in logTable's today partition at every 59-th minute
      */
 
-    @Scheduled(cron = "30 59 * * * *")
+    @Scheduled(cron = "50 59 * * * *")
     private void insertOverwriteToday() {
 
         String today = now(DatePattern.DEFAULT_DATE);

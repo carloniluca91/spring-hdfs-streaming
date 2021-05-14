@@ -1,4 +1,4 @@
-package it.luca.streaming.core.model;
+package it.luca.streaming.core.dto;
 
 import it.luca.streaming.data.enumeration.IngestionOperationCode;
 import it.luca.streaming.data.model.common.SourceSpecification;
@@ -9,8 +9,12 @@ import java.sql.Timestamp;
 
 import static it.luca.streaming.data.utils.Utils.*;
 
+/**
+ * Dto representing log records produced for each (attempted) ingestion operation
+ */
+
 @Data
-public class IngestionLogRecord {
+public class IngestionLogDto {
 
     private final Timestamp ingestionTs = Timestamp.valueOf(now());
     private final String ingestionDt = now(DatePattern.DEFAULT_DATE);
@@ -27,12 +31,12 @@ public class IngestionLogRecord {
     private final Timestamp insertTs = Timestamp.valueOf(now());
     private final String insertDt = now(DatePattern.DEFAULT_DATE);
 
-    public IngestionLogRecord(SourceSpecification<?, ?, ?> sourceSpecification, Exception exception) {
+    public IngestionLogDto(SourceSpecification<?, ?, ?> sourceSpecification, Exception exception) {
 
         this(sourceSpecification, null, null, exception);
     }
 
-    public <P> IngestionLogRecord(SourceSpecification<?, ?, P> sourceSpecification, P partitionValue, Integer partitionRecordCount, Exception exception) {
+    public <P> IngestionLogDto(SourceSpecification<?, ?, P> sourceSpecification, P partitionValue, Integer partitionRecordCount, Exception exception) {
 
         this.dataSourceId = sourceSpecification.getDataSourceId().name();
         this.dataSourceType = sourceSpecification.getDataSourceType().name();

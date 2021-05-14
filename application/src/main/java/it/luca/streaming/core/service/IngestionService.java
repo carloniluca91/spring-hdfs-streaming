@@ -3,8 +3,8 @@ package it.luca.streaming.core.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.luca.streaming.core.dao.ImpalaDaoImpl;
 import it.luca.streaming.core.exception.EmptyInputException;
-import it.luca.streaming.core.model.ControllerResponse;
-import it.luca.streaming.core.model.IngestionLogRecord;
+import it.luca.streaming.core.dto.DataSourceResponseDto;
+import it.luca.streaming.core.dto.IngestionLogDto;
 import it.luca.streaming.core.repository.HDFSClient;
 import it.luca.streaming.data.enumeration.DataSourceId;
 import it.luca.streaming.data.model.common.SourceSpecification;
@@ -24,7 +24,7 @@ import static it.luca.streaming.data.utils.Utils.isPresent;
 
 @Slf4j
 @Component
-public class SourceService {
+public class IngestionService {
 
     @Autowired
     private HDFSClient hdfsClient;
@@ -35,16 +35,16 @@ public class SourceService {
     /**
      * Deserializes input data as as instance of T, convert such instance to a set of avro records of type A and store them on HDFS
      * @param input input data
-     * @param sourceSpecification set of source's specification
+     * @param specification set of source's specification
      * @param <T> type of deserialized input data
      * @param <A> type of avro record to be generated from deserialized input data
      * @return ingestion operation report
      */
 
-    public <T, A extends SpecificRecord, P> ControllerResponse store(String input, SourceSpecification<T, A, P> sourceSpecification) {
+    public <T, A extends SpecificRecord, P> DataSourceResponseDto store(String input, SourceSpecification<T, A, P> specification) {
 
-        DataSourceId dataSourceId = sourceSpecification.getDataSourceId();
-        List<IngestionLogRecord> ingestionLogRecords = new ArrayList<>();
+        DataSourceId dataSourceId = specification.getDataSourceId();
+        List<IngestionLogDto> ingestionLogDtos = new ArrayList<>();
         T payload = null;
         Exception exception = null;
 
@@ -52,39 +52,39 @@ public class SourceService {
         try {
             if (!StringUtils.isBlank(input)) {
                 log.info("{} - Call received. Input data:\n\n{}\n", dataSourceId, input);
-                payload = readValue(input, sourceSpecification.getInputDataClass(), sourceSpecification.getDataSourceType());
+                payload = readValue(input, specification.getInputDataClass(), specification.getDataSourceType());
             } else {
                 throw new EmptyInputException(dataSourceId);
             }
         } catch (EmptyInputException | JsonProcessingException caughtException) {
             exception = caughtException;
-            log.error("{} - Caught exception while processing given input. Stack trace: ", dataSourceId, caughtException);
-            ingestionLogRecords.add(new IngestionLogRecord(sourceSpecification, caughtException));
+            log.error("{} - Caught exception while processing input data. Stack trace: ", dataSourceId, caughtException);
+            ingestionLogDtos.add(new IngestionLogDto(specification, caughtException));
         }
 
         if (isPresent(payload)) {
 
             // For each partition value, write related .avro records
-            Map<P, List<A>> partitionRecordsMap = sourceSpecification.getPartitionRecordsMap(payload);
-            BiFunction<Map.Entry<P, List<A>>, Exception, IngestionLogRecord> biFunction = (entry, excpt) ->
-                    new IngestionLogRecord(sourceSpecification, entry.getKey(), entry.getValue().size(), excpt);
+            Map<P, List<A>> partitionRecordsMap = specification.getPartitionRecordsMap(payload);
+            BiFunction<Map.Entry<P, List<A>>, Exception, IngestionLogDto> biFunction = (entry, excpt) ->
+                    new IngestionLogDto(specification, entry.getKey(), entry.getValue().size(), excpt);
             for (Map.Entry<P, List<A>> entry : partitionRecordsMap.entrySet()) {
 
                 P partitionValue = entry.getKey();
                 List<A> partitionRecords = entry.getValue();
                 try {
-                    hdfsClient.write(partitionValue, partitionRecords, sourceSpecification);
-                    ingestionLogRecords.add(biFunction.apply(entry, null));
+                    hdfsClient.write(partitionValue, partitionRecords, specification);
+                    ingestionLogDtos.add(biFunction.apply(entry, null));
                 } catch (Exception caughtException) {
                     exception = caughtException;
                     log.error("{} - Caught exception while saving deserialized data. Stack trace: ", dataSourceId, caughtException);
-                    ingestionLogRecords.add(biFunction.apply(entry, caughtException));
+                    ingestionLogDtos.add(biFunction.apply(entry, caughtException));
                 }
             }
         }
 
         // Log ingestion operation
-        impalaDao.insertLogRecords(ingestionLogRecords);
-        return new ControllerResponse(dataSourceId, exception);
+        impalaDao.insertLogRecords(ingestionLogDtos);
+        return new DataSourceResponseDto(specification, exception);
     }
 }
